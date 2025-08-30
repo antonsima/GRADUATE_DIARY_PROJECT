@@ -1,9 +1,11 @@
+from django.views.generic import TemplateView
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from config import settings
 from users.models import User
 from users.serializers import UserSerializer
 
@@ -42,3 +44,11 @@ def logout_view(request):
         {"detail": "Successfully logged out."},
         status=status.HTTP_200_OK
     )
+
+
+class CustomTemplateView(TemplateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['test_email'] = settings.TEST_EMAIL
+        context['test_password'] = settings.TEST_PASSWORD
+        return context

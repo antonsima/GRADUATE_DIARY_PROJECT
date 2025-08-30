@@ -32,8 +32,8 @@
 
         // Тестовые данные для логина (замените на реальные)
         const testData = {
-            email: 'admin@sky.pro',
-            password: 'admin'
+            email: "{{ test_email }}",
+            password: "{{ test_password }}"
         };
 
         const response = await apiRequest('/users/api/login/', 'POST', testData, false);
@@ -55,6 +55,7 @@
         const testData = {
             email: 'test' + Date.now() + '@example.com',
             password: 'testpassword123',
+            password2: 'testpassword123',
             first_name: 'Test',
             last_name: 'User'
         };
@@ -122,7 +123,7 @@
     <h2>Инструкция по тестированию</h2>
     <ol>
         <li>Нажмите "Тест /users/api/register/" для создания тестового пользователя</li>
-        <li>Нажмите "Тест /users/api/login/" для входа (используйте admin@sky.pro или созданного пользователя)</li>
+        <li>Нажмите "Тест /users/api/login/" для входа (используйте TEST_EMAIL или созданного пользователя)</li>
         <li>Нажмите "Тест /users/api/profile/" для проверки доступа к профилю</li>
         <li>Нажмите "Тест /users/api/token/refresh/" для обновления токена</li>
         <li>Нажмите "Тест /users/api/logout/" для выхода</li>
