@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование API авторизации</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="password"], input[type="email"] {
+            width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .response {
+            margin-top: 15px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+            white-space: pre-wrap; word-wrap: break-word;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .token-display { font-size: 12px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тестирование API авторизации</h1>
+
+        <!-- Навигация -->
+        <nav style="margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+            <a href="/users/">Главная</a> |
+            <span id="auth-links">
+                <a href="/users/login/">Войти</a> |
+                <a href="/users/register/">Регистрация</a>
+            </span>
+            <span id="profile-links" style="display: none;">
+                <a href="/users/profile/">Профиль</a> |
+                <a href="/users/logout/">Выйти</a>
+            </span>
+        </nav>
+
+        <div class="section">
+            <h2>Текущее состояние</h2>
+            <div id="auth-status">Не авторизован</div>
+            <div id="tokens" style="display: none;">
+                <h3>Токены:</h3>
+                <div id="access-token" class="token-display"></div>
+                <div id="refresh-token" class="token-display"></div>
+            </div>
+        </div>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Подключаем API функции -->
+    <script src="{% static 'js/api.js' %}"></script>
+</body>
+</html>

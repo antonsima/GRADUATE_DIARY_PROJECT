@@ -1,0 +1,131 @@
+{% extends "users/base.html" %}
+
+{% block content %}
+<div class="section">
+    <h2>Быстрые ссылки для тестирования</h2>
+    <p>
+        <a href="register/">Регистрация</a> |
+        <a href="login/">Авторизация</a> |
+        <a href="profile/">Профиль</a> |
+        <a href="logout/">Выход</a>
+    </p>
+</div>
+
+<div class="section">
+    <h2>Проверка API эндпоинтов</h2>
+
+    <div class="form-group">
+        <button onclick="testLogin()">Тест /users/api/login/</button>
+        <button onclick="testRegister()">Тест /users/api/register/</button>
+        <button onclick="testProfile()">Тест /users/api/profile/</button>
+        <button onclick="testRefresh()">Тест /users/api/token/refresh/</button>
+        <button onclick="testLogout()">Тест /users/api/logout/</button>
+    </div>
+
+    <div id="test-response" class="response"></div>
+</div>
+
+<script>
+    async function testLogin() {
+        const responseDiv = document.getElementById('test-response');
+        responseDiv.innerHTML = 'Тестирование логина...';
+
+        // Тестовые данные для логина (замените на реальные)
+        const testData = {
+            email: 'admin@sky.pro',
+            password: 'admin'
+        };
+
+        const response = await apiRequest('/users/api/login/', 'POST', testData, false);
+
+        if (response.ok) {
+            responseDiv.innerHTML = `<span class="success">Логин успешен! Токены сохранены.</span>\n${JSON.stringify(response.data, null, 2)}`;
+            // Сохраняем токены
+            saveTokens(response.data.access, response.data.refresh);
+        } else {
+            responseDiv.innerHTML = `<span class="error">Ошибка логина ${response.status}:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        }
+    }
+
+    async function testRegister() {
+        const responseDiv = document.getElementById('test-response');
+        responseDiv.innerHTML = 'Тестирование регистрации...';
+
+        // Тестовые данные для регистрации
+        const testData = {
+            email: 'test' + Date.now() + '@example.com',
+            password: 'testpassword123',
+            first_name: 'Test',
+            last_name: 'User'
+        };
+
+        const response = await apiRequest('/users/api/register/', 'POST', testData, false);
+
+        if (response.ok) {
+            responseDiv.innerHTML = `<span class="success">Регистрация успешна:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        } else {
+            responseDiv.innerHTML = `<span class="error">Ошибка регистрации ${response.status}:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        }
+    }
+
+    async function testProfile() {
+        const responseDiv = document.getElementById('test-response');
+        responseDiv.innerHTML = 'Тестирование профиля...';
+
+        const response = await apiRequest('/users/api/profile/');
+
+        if (response.ok) {
+            responseDiv.innerHTML = `<span class="success">Данные профиля:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        } else {
+            responseDiv.innerHTML = `<span class="error">Ошибка профиля ${response.status}:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        }
+    }
+
+    async function testRefresh() {
+        const responseDiv = document.getElementById('test-response');
+        responseDiv.innerHTML = 'Тестирование обновления токена...';
+
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) {
+            responseDiv.innerHTML = '<span class="error">Refresh token не найден. Сначала выполните вход.</span>';
+            return;
+        }
+
+        const response = await apiRequest('/users/api/token/refresh/', 'POST', { refresh: refreshToken }, false);
+
+        if (response.ok) {
+            responseDiv.innerHTML = `<span class="success">Токен обновлен:</span>\n${JSON.stringify(response.data, null, 2)}`;
+            // Сохраняем новый access токен
+            saveTokens(response.data.access, refreshToken);
+        } else {
+            responseDiv.innerHTML = `<span class="error">Ошибка обновления ${response.status}:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        }
+    }
+
+    async function testLogout() {
+        const responseDiv = document.getElementById('test-response');
+        responseDiv.innerHTML = 'Тестирование выхода...';
+
+        const response = await apiRequest('/users/api/logout/', 'POST', {}, true);
+
+        if (response.ok) {
+            responseDiv.innerHTML = `<span class="success">Выход выполнен:</span>\n${JSON.stringify(response.data, null, 2)}`;
+            // Очищаем токены
+            clearTokens();
+        } else {
+            responseDiv.innerHTML = `<span class="error">Ошибка выхода ${response.status}:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        }
+    }
+</script>
+
+<div class="section">
+    <h2>Инструкция по тестированию</h2>
+    <ol>
+        <li>Нажмите "Тест /users/api/register/" для создания тестового пользователя</li>
+        <li>Нажмите "Тест /users/api/login/" для входа (используйте admin@sky.pro или созданного пользователя)</li>
+        <li>Нажмите "Тест /users/api/profile/" для проверки доступа к профилю</li>
+        <li>Нажмите "Тест /users/api/token/refresh/" для обновления токена</li>
+        <li>Нажмите "Тест /users/api/logout/" для выхода</li>
+    </ol>
+</div>
+{% endblock %}
