@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "graduate-diary-project"
+version = "0.1.0"
+description = ""
+authors = ["Anton <anton_sima@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.2.5"
+dotenv = "^0.9.9"
+psycopg2 = "^2.9.10"
+psycopg2-binary = "^2.9.10"
+
+[tool.poetry.group.lint.dependencies]
+black = "^25.1.0"
+flake8 = "^7.3.0"
+isort = "^6.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

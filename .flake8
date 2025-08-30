@@ -1,0 +1,8 @@
+[flake8]
+max-line-length = 119
+ignore = E203, W503
+per-file-ignores =
+    */admin.py:F401,
+    */tests.py:F401,
+    */users/tests.py:F401
+exclude = .git, __pycache__, venv, .venv, tests/variables_for_tests.py, tests/conftest.py, migrations/*
