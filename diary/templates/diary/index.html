@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Дневник</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #e9ecef;
+            padding: 20px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+        }
+
+        .navbar-brand, .navbar-nav .nav-link {
+            color: white !important;
+        }
+
+        footer {
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+<!-- Верхняя навигация -->
+<nav id="navigation-container"></nav>
+
+<!-- Основной контент с sidebar -->
+<div class="main-container">
+    <!-- Левый sidebar -->
+    <aside class="sidebar">
+        <h5>Меню</h5>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="#">Все записи</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Сегодня</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Неделя</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Месяц</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Поиск</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Настройки</a>
+            </li>
+        </ul>
+
+        <hr>
+
+        <h5>Теги</h5>
+        <div class="d-flex flex-wrap gap-1">
+            <span class="badge bg-secondary">работа</span>
+            <span class="badge bg-secondary">личное</span>
+            <span class="badge bg-secondary">идеи</span>
+            <span class="badge bg-secondary">спорт</span>
+        </div>
+    </aside>
+
+    <!-- Основной контент -->
+    <main class="content">
+        <div class="container-fluid">
+            <h1>Добро пожаловать в ваш дневник</h1>
+            <p>Здесь вы можете вести свои личные записи и мысли.</p>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Последние записи</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Запись от 10 января</li>
+                                <li class="list-group-item">Запись от 9 января</li>
+                                <li class="list-group-item">Запись от 8 января</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Статистика</h5>
+                            <p>Всего записей: <strong>156</strong></p>
+                            <p>За этот месяц: <strong>12</strong></p>
+                            <p>За сегодня: <strong>1</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Футер -->
+<footer id="footer-container">
+    <!-- Включаем футер из внешнего файла -->
+    <div data-include="/templates/diary/footer.html"></div>
+    {% extends "diary/footer.html" %}
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+
+<!-- Скрипт для включения внешних HTML файлов -->
+<script>
+    fetch('/diary/templates/diary/footer.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('footer-container').innerHTML = data;
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки футера:', error);
+            document.getElementById('footer-container').innerHTML = 'Футер не загружен';
+        });
+
+    fetch('navigation.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navigation-container').innerHTML = data;
+        });
+</script>
+</body>
+</html>
