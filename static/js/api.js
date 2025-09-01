@@ -1,167 +1,287 @@
-// Функция для получения CSRF-токена из cookies
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+class API {
+    static baseURL = '/api/';
+    static authToken = localStorage.getItem('authToken');
+    static refreshToken = localStorage.getItem('refreshToken');
 
-// Функции для работы с localStorage
-function saveTokens(access, refresh) {
-    localStorage.setItem('access_token', access);
-    localStorage.setItem('refresh_token', refresh);
-    updateAuthStatus();
-}
+    static async request(endpoint, options = {}) {
+        const url = this.baseURL + endpoint;
 
-function getAccessToken() {
-    return localStorage.getItem('access_token');
-}
-
-function getRefreshToken() {
-    return localStorage.getItem('refresh_token');
-}
-
-function clearTokens() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    updateAuthStatus();
-}
-
-// Функция для API запросов
-async function apiRequest(url, method, data, includeAuth = true) {
-    console.log(`API Request: ${method} ${url}`, data);
-
-    const options = {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        }
-    };
-
-    // Добавляем body только если есть данные
-    if (data) {
-        options.body = JSON.stringify(data);
-    }
-
-    if (includeAuth) {
-        const token = localStorage.getItem('access_token');
-        console.log('Токен для авторизации:', token);
-        if (token) {
-            options.headers['Authorization'] = `Bearer ${token}`;
-        }
-    }
-
-    console.log('Options:', options);
-
-    try {
-        const response = await fetch(url, options);
-        console.log('Response status:', response.status);
-
-        const contentType = response.headers.get('content-type');
-
-        if (contentType && contentType.includes('application/json')) {
-            const responseData = await response.json();
-            console.log('Response JSON:', responseData);
-            return {
-                ok: response.ok,
-                status: response.status,
-                data: responseData
-            };
-        } else {
-            const text = await response.text();
-            console.error('Non-JSON response:', text);
-            return {
-                ok: false,
-                status: response.status,
-                data: { error: 'Server returned non-JSON response' }
-            };
-        }
-    } catch (error) {
-        console.error('Request failed:', error);
-        return {
-            ok: false,
-            status: 0,
-            data: { error: 'Network error' }
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+            ...options,
         };
-    }
-}
 
-// Функция для сохранения токенов
-function saveTokens(accessToken, refreshToken) {
-    localStorage.setItem('access_token', accessToken);
-    localStorage.setItem('refresh_token', refreshToken);
-}
+        if (this.authToken) {
+            config.headers['Authorization'] = `Bearer ${this.authToken}`;
+        }
 
-// Функция для проверки авторизации
-function isAuthenticated() {
-    return localStorage.getItem('access_token') !== null;
-}
+        try {
+            const response = await fetch(url, config);
 
-// Функция для обновления статуса авторизации в UI
-function updateAuthStatus() {
-    const accessToken = getAccessToken();
-    const authStatus = document.getElementById('auth-status');
-    const tokensDiv = document.getElementById('tokens');
-
-    if (authStatus && tokensDiv) {
-        if (accessToken) {
-            authStatus.textContent = 'Авторизован';
-            authStatus.className = 'success';
-            tokensDiv.style.display = 'block';
-            if (document.getElementById('access-token')) {
-                document.getElementById('access-token').textContent = 'Access: ' + accessToken.substring(0, 50) + '...';
+            if (response.status === 401 && this.refreshToken) {
+                // Попытка обновить токен
+                const refreshed = await this.refreshAuthToken();
+                if (refreshed) {
+                    // Повторяем запрос с новым токеном
+                    config.headers['Authorization'] = `Bearer ${this.authToken}`;
+                    return await fetch(url, config);
+                }
             }
-            if (document.getElementById('refresh-token')) {
-                document.getElementById('refresh-token').textContent = 'Refresh: ' + (getRefreshToken() || '').substring(0, 50) + '...';
-            }
-        } else {
-            authStatus.textContent = 'Не авторизован';
-            authStatus.className = 'error';
-            tokensDiv.style.display = 'none';
+
+            return response;
+        } catch (error) {
+            console.error('API request failed:', error);
+            throw error;
         }
     }
-}
 
-// Функция для выхода
-async function logout() {
-    try {
-        const response = await apiRequest('/users/api/logout/', 'POST', {}, true);
+    static async refreshAuthToken() {
+        try {
+            const response = await fetch('/api/auth/token/refresh/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refresh: this.refreshToken }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.setTokens(data.access, this.refreshToken);
+                return true;
+            }
+        } catch (error) {
+            console.error('Token refresh failed:', error);
+        }
+
+        this.clearTokens();
+        return false;
+    }
+
+    static setTokens(accessToken, refreshToken) {
+        this.authToken = accessToken;
+        this.refreshToken = refreshToken;
+        localStorage.setItem('authToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+    }
+
+    static clearTokens() {
+        this.authToken = null;
+        this.refreshToken = null;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+    }
+
+    // Auth methods
+    static async login(email, password) {
+        const response = await this.request('auth/login/', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        });
 
         if (response.ok) {
-            console.log('Logout successful:', response.data.detail);
+            const data = await response.json();
+            this.setTokens(data.tokens.access, data.tokens.refresh);
+            return data;
         } else {
-            console.log('Logout API error, but clearing tokens locally');
+            const error = await response.json();
+            throw new Error(error.detail || 'Ошибка входа');
         }
-    } catch (error) {
-        console.log('Logout request failed, clearing tokens locally');
-    } finally {
-        // Всегда очищаем токены локально
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/users/login/';
+    }
+
+    static async register(userData) {
+        const response = await this.request('auth/register/', {
+            method: 'POST',
+            body: JSON.stringify(userData),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            this.setTokens(data.tokens.access, data.tokens.refresh);
+            return data;
+        } else {
+            const error = await response.json();
+            throw new Error(error.detail || 'Ошибка регистрации');
+        }
+    }
+
+    static async getProfile() {
+        const response = await this.request('auth/profile/');
+        if (response.ok) {
+            return await response.json();
+        }
+        throw new Error('Ошибка получения профиля');
+    }
+
+    static async updateProfile(profileData) {
+        const response = await this.request('auth/profile/', {
+            method: 'PUT',
+            body: JSON.stringify(profileData),
+        });
+
+        if (response.ok) {
+            return await response.json();
+        } else {
+            const error = await response.json();
+            throw new Error(error.detail || 'Ошибка обновления профиля');
+        }
+    }
+
+    static async logout() {
+        try {
+            await this.request('auth/logout/', {
+                method: 'POST',
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            this.clearTokens();
+            window.location.href = '/';
+        }
     }
 }
 
-// Функция для обновления навигации
-function updateNavigation() {
-    const isAuth = isAuthenticated();
-    if (document.getElementById('auth-links') && document.getElementById('profile-links')) {
-        document.getElementById('auth-links').style.display = isAuth ? 'none' : 'inline';
-        document.getElementById('profile-links').style.display = isAuth ? 'inline' : 'none';
-    }
-}
-
-// Инициализация при загрузке
+// DOM Ready
 document.addEventListener('DOMContentLoaded', function() {
-    updateAuthStatus();
-    updateNavigation();
+    // Check auth status and update UI
+    updateAuthUI();
+
+    // Login form handler
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    // Register form handler
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+
+    // Settings form handler
+    const settingsForm = document.getElementById('settingsForm');
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', handleSettingsUpdate);
+        loadProfileData();
+    }
+
+    // Profile page
+    if (document.getElementById('profile-content')) {
+        loadProfilePage();
+    }
+
+    // Logout buttons
+    document.querySelectorAll('[data-action="logout"]').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            API.logout();
+        });
+    });
 });
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        await API.login(email, password);
+//        showMessage('Успешный вход!', 'success');
+        setTimeout(() => window.location.href = '/', 1000);
+    } catch (error) {
+        showMessage(error.message, 'error');
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    const formData = {
+        email: document.getElementById('email').value,
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        password: document.getElementById('password').value,
+        password2: document.getElementById('password2').value
+    };
+
+    try {
+        await API.register(formData);
+        showMessage('Регистрация успешна!', 'success');
+        setTimeout(() => window.location.href = '/', 1000);
+    } catch (error) {
+        showMessage(error.message, 'error');
+    }
+}
+
+async function loadProfileData() {
+    try {
+        const profile = await API.getProfile();
+        document.getElementById('firstName').value = profile.first_name || '';
+        document.getElementById('lastName').value = profile.last_name || '';
+        document.getElementById('email').value = profile.email || '';
+        document.getElementById('settingsForm').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
+    } catch (error) {
+        document.getElementById('auth-required').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+async function handleSettingsUpdate(e) {
+    e.preventDefault();
+    const formData = {
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        password: document.getElementById('password').value,
+        password2: document.getElementById('password2').value
+    };
+
+    try {
+        await API.updateProfile(formData);
+        showMessage('Настройки сохранены!', 'success');
+        // Clear password fields
+        document.getElementById('password').value = '';
+        document.getElementById('password2').value = '';
+    } catch (error) {
+        showMessage(error.message, 'error');
+    }
+}
+
+async function loadProfilePage() {
+    try {
+        const profile = await API.getProfile();
+        document.getElementById('user-name').textContent = `${profile.first_name} ${profile.last_name}`;
+        document.getElementById('user-email').textContent = profile.email;
+
+        // Load statistics (you'll need to implement these endpoints)
+        // const stats = await API.request('dashboard/');
+        // document.getElementById('total-entries').textContent = stats.total_entries || 0;
+        // document.getElementById('monthly-entries').textContent = stats.monthly_entries || 0;
+
+        document.getElementById('profile-content').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
+    } catch (error) {
+        document.getElementById('auth-required').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+function updateAuthUI() {
+    const authLinks = document.getElementById('auth-links');
+    const profileLinks = document.getElementById('profile-links');
+
+    if (API.authToken) {
+        if (authLinks) authLinks.classList.add('d-none');
+        if (profileLinks) profileLinks.classList.remove('d-none');
+    } else {
+        if (authLinks) authLinks.classList.remove('d-none');
+        if (profileLinks) profileLinks.classList.add('d-none');
+    }
+}
+
+function showMessage(message, type) {
+    // Implement message display logic
+    alert(`${type}: ${message}`);
+}

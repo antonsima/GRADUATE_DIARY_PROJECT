@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar</title>
+    <!-- Bootstrap CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .custom-sidebar {
+            background-color: #e4d6c9 !important;
+            border: 1px solid #ffffff !important;
+            border-radius: 8px !important;
+            margin: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            padding: 1rem;
+            width: 280px;
+            height: fit-content;
+        }
+
+        .custom-sidebar h5 {
+            color: #5a4a42 !important;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #d6c8bb;
+            padding-bottom: 0.5rem;
+        }
+
+        .custom-sidebar .nav-link {
+            color: #5a4a42 !important;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            margin-bottom: 0.3rem;
+        }
+
+        .custom-sidebar .nav-link:hover,
+        .custom-sidebar .nav-link.active {
+            background-color: #d6c8bb !important;
+            color: #3a2e28 !important;
+        }
+
+        .custom-sidebar .badge {
+            background-color: #5a4a42 !important;
+            color: #e4d6c9 !important;
+            margin: 0.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .custom-sidebar .badge:hover {
+            background-color: #3a2e28 !important;
+            transform: scale(1.05);
+        }
+
+        .custom-sidebar hr {
+            border-color: #d6c8bb;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <aside class="custom-sidebar">
+        <h5>Меню</h5>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Все записи</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Сегодня</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Неделя</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Месяц</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Поиск</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Настройки</a>
+            </li>
+        </ul>
+
+        <hr>
+
+        <h5>Теги</h5>
+        <div class="d-flex flex-wrap gap-1">
+            <span class="badge bg-secondary">работа</span>
+            <span class="badge bg-secondary">личное</span>
+            <span class="badge bg-secondary">идеи</span>
+            <span class="badge bg-secondary">спорт</span>
+            <span class="badge bg-secondary">путешествия</span>
+            <span class="badge bg-secondary">книги</span>
+        </div>
+    </aside>
+</body>
+</html>

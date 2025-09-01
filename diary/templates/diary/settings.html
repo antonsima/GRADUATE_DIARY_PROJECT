@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки - Мой Дневник</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+{% include 'diary/navigation.html' %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Настройки профиля</h3>
+                    <div id="loading" class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+
+                    <!-- Сообщение о необходимости авторизации -->
+                    <div id="auth-required" class="alert alert-warning" style="display: none;">
+                        <p>Для изменения настроек необходимо авторизоваться.</p>
+                        <a href="{% url 'diary:login_page' %}" class="btn btn-primary">Войти</a>
+                    </div>
+
+                    <form id="settingsForm" style="display: none;">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">Имя</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Фамилия</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Новый пароль (оставьте пустым, если не хотите
+                                менять)</label>
+                            <input type="password" class="form-control" id="password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password2" class="form-label">Подтверждение пароля</label>
+                            <input type="password" class="form-control" id="password2">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Сохранить изменения</button>
+                    </form>
+                    <div id="error-message" class="alert alert-danger mt-3" style="display: none;"></div>
+                    <div id="success-message" class="alert alert-success mt-3" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<script src="/static/js/bootstrap.bundle.min.js"></script>-->
+<!--<script src="/static/js/api.js"></script>-->
+
+
+</body>
+</html>

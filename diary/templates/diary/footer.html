@@ -96,6 +96,15 @@
         }
         .custom-footer {
             background-color: #e4d6c9 !important;
+            border: 1px solid #ffffff !important; /* Такой же бордер как у навигации */
+            border-radius: 8px !important; /* Такой же радиус */
+            margin: 10px; /* Такой же отступ */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important; /* Такой же shadow */
+            padding: 0.5rem 1rem; /* Такой же padding */
+            height: auto; /* Автоматическая высота */
+            min-height: 80px; /* Минимальная высота как у навигации */
+            display: flex;
+            align-items: center; /* Вертикальное выравнивание содержимого */
         }
 
         .custom-footer .text-white {
@@ -124,43 +133,51 @@
             transform: scale(1.15);
             filter: brightness(1.2);
         }
+
+        /* Стили для выравнивания содержимого футера */
+        .footer-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 <div class="container-fluid">
-    <footer
-            class="d-flex flex-wrap justify-content-between align-items-center py-3 my-3 border rounded-3 custom-footer">
-        <div class="col-md-4 d-flex align-items-center ps-4">
-            <a href="/"
-               class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1"
-               aria-label="Bootstrap">
-                <img src="/static/images/avatar.jpg" alt="Logo" width="30" height="24"
-                     class="d-inline-block align-text-top">
-            </a>
-            <span class="mb-3 mb-md-0 text-body-secondary">&copy; 2025 Company, Inc</span>
+    <footer class="custom-footer">
+        <div class="footer-content">
+            <div class="col-md-4 d-flex align-items-center">
+                <a href="/"
+                   class="me-2 text-decoration-none"
+                   aria-label="Bootstrap">
+                    <img src="/static/images/baxcha.png" alt="Logo" width="50" height="50"
+                         class="d-inline-block align-text-top">
+                </a>
+                <span class="text-body-secondary">&copy; 2025 Baxcha, Inc</span>
+            </div>
+            <ul class="nav col-md-4 justify-content-end list-unstyled d-flex ms-auto">
+                <li class="ms-3">
+                    <a class="text-body-secondary" href="https://vk.com/baxcha241" aria-label="VK">
+                        <img src="/static/images/vk.png" alt="VK"
+                             class="social-icon"></a>
+                </li>
+                <li class="ms-3">
+                    <a class="text-body-secondary" href="https://t.me/baxcha241" aria-label="TG">
+                        <img src="/static/images/tg.png" alt="Telegram"
+                             class="social-icon"></a>
+                </li>
+                <li class="ms-3">
+                    <a class="text-body-secondary" href="https://youtube.com/@baxcha241" aria-label="YT">
+                        <img src="/static/images/yt.png" alt="YouTube"
+                             class="social-icon"></a>
+                </li>
+                <li class="ms-3">
+                    <a class="text-body-secondary" href="https://instagram.com/anton_simak" aria-label="INST">
+                        <img src="/static/images/inst.png" alt="Instagram"
+                             class="social-icon"></a>
+                </li>
+            </ul>
         </div>
-        <ul class="nav col-md-4 justify-content-end list-unstyled d-flex pe-4">
-            <li class="ms-3">
-                <a class="text-body-secondary" href="https://vk.com/baxcha241" aria-label="VK">
-                    <img src="/static/images/vk.png" alt="Logo"
-                         class="d-inline-block align-text-top social-icon"></a>
-            </li>
-            <li class="ms-3">
-                <a class="text-body-secondary" href="https://t.me/baxcha241" aria-label="TG">
-                    <img src="/static/images/tg.png" alt="Logo"
-                         class="d-inline-block align-text-top social-icon"></a>
-            </li>
-            <li class="ms-3">
-                <a class="text-body-secondary" href="https://youtube.com/@baxcha241" aria-label="YT"
-                ><img src="/static/images/yt.png" alt="Logo"
-                      class="d-inline-block align-text-top social-icon"></a>
-            </li>
-            <li class="ms-3">
-                <a class="text-body-secondary" href="https://instagram.com/anton_simak" aria-label="INST"
-                ><img src="/static/images/inst.png" alt="Logo"
-                      class="d-inline-block align-text-top social-icon"></a>
-            </li>
-        </ul>
     </footer>
 </div>
 

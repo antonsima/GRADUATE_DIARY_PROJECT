@@ -13,6 +13,8 @@ psycopg2 = "^2.9.10"
 psycopg2-binary = "^2.9.10"
 djangorestframework-simplejwt = "^5.5.1"
 djangorestframework = "^3.16.1"
+django-markdownx = "^4.0.9"
+django-cors-headers = "^4.7.0"
 
 [tool.poetry.group.lint.dependencies]
 black = "^25.1.0"
