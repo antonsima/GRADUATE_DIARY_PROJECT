@@ -1,8 +1,10 @@
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, permissions, status, generics
@@ -16,6 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Avg, Q
 from datetime import datetime
 import calendar
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -277,116 +280,172 @@ class DashboardAPIView(APIView):
 
 
 # API Views
-class UserRegistrationView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-
-            # Генерируем токены
-            refresh = RefreshToken.for_user(user)
-
-            return Response({
-                'message': 'Пользователь успешно зарегистрирован',
-                'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name
-                },
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
-            }, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserLoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = UserLoginSerializer(data=request.data, context={'request': request})
-
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-
-            # Генерируем токены
-            refresh = RefreshToken.for_user(user)
-
-            return Response({
-                'message': 'Успешный вход',
-                'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name
-                },
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
-            }, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class UserRegistrationView(APIView):
+#     permission_classes = [permissions.AllowAny]
+#
+#     def post(self, request):
+#         serializer = UserRegistrationSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#
+#             # Генерируем токены
+#             refresh = RefreshToken.for_user(user)
+#
+#             return Response({
+#                 'message': 'Пользователь успешно зарегистрирован',
+#                 'user': {
+#                     'id': user.id,
+#                     'email': user.email,
+#                     'first_name': user.first_name,
+#                     'last_name': user.last_name
+#                 },
+#                 'tokens': {
+#                     'refresh': str(refresh),
+#                     'access': str(refresh.access_token),
+#                 }
+#             }, status=status.HTTP_201_CREATED)
+#
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+# class UserLoginView(APIView):
+#     permission_classes = [permissions.AllowAny]
+#
+#     def post(self, request):
+#         serializer = UserLoginSerializer(data=request.data, context={'request': request})
+#
+#         if serializer.is_valid():
+#             user = serializer.validated_data['user']
+#
+#             # Генерируем токены
+#             refresh = RefreshToken.for_user(user)
+#
+#             return Response({
+#                 'message': 'Успешный вход',
+#                 'user': {
+#                     'id': user.id,
+#                     'email': user.email,
+#                     'first_name': user.first_name,
+#                     'last_name': user.last_name
+#                 },
+#                 'tokens': {
+#                     'refresh': str(refresh),
+#                     'access': str(refresh.access_token),
+#                 }
+#             }, status=status.HTTP_200_OK)
+#
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data)
 
-    def put(self, request):
-        serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                'message': 'Профиль успешно обновлен',
-                'user': UserProfileSerializer(user).data
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class TokenRefreshView(SimpleTokenRefreshView):
-    permission_classes = [permissions.AllowAny]
-
-
-@csrf_exempt
-def logout_view(request):
-    if request.method == 'POST':
-        try:
-            return JsonResponse({'message': 'Успешный выход'}, status=200)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    return JsonResponse({'error': 'Метод не разрешен'}, status=405)
+# class UserProfileView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
+#
+#     def get(self, request):
+#         serializer = UserProfileSerializer(request.user)
+#         return Response(serializer.data)
+#
+#     def put(self, request):
+#         serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             return Response({
+#                 'message': 'Профиль успешно обновлен',
+#                 'user': UserProfileSerializer(user).data
+#             })
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#
+# class TokenRefreshView(SimpleTokenRefreshView):
+#     permission_classes = [permissions.AllowAny]
+#
+#
+# @csrf_exempt
+# def logout_view(request):
+#     if request.method == 'POST':
+#         try:
+#             return JsonResponse({'message': 'Успешный выход'}, status=200)
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=400)
+#     return JsonResponse({'error': 'Метод не разрешен'}, status=405)
 
 
 # HTML Views
-class RegistrationPageView(View):
-    def get(self, request):
-        return render(request, 'diary/register.html')
-
-
-class LoginPageView(View):
-    def get(self, request):
-        return render(request, 'diary/login.html')
-
-
+# class RegistrationPageView(View):
+#     def get(self, request):
+#         return render(request, 'diary/register.html')
+#
+#
+# class LoginPageView(View):
+#     def get(self, request):
+#         return render(request, 'diary/login.html')
+#
+#
 class ProfilePageView(View):
     def get(self, request):
         return render(request, 'diary/profile.html')
-
-
-class LogoutPageView(View):
-    def get(self, request):
-        return render(request, 'diary/logout.html')
-
-
+#
+#
+# class LogoutPageView(View):
+#     def get(self, request):
+#         return render(request, 'diary/logout.html')
+#
+#
 class SettingsPageView(View):
     def get(self, request):
         return render(request, 'diary/settings.html')
+
+    def post(self, request):
+        user = request.user
+        print(f"User: {user}")
+        print(f"Files: {request.FILES}")
+
+        # Обновляем имя и фамилию
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+
+        # Обрабатываем загрузку аватара
+        if 'avatar' in request.FILES:
+            avatar = request.FILES['avatar']
+            print(f"Avatar file: {avatar}")
+            print(f"Avatar size: {avatar.size}")
+            print(f"Avatar name: {avatar.name}")
+
+            # Валидация размера файла
+            if avatar.size > 2 * 1024 * 1024:
+                messages.error(request, _('Размер файла не должен превышать 2MB'))
+            else:
+                # Валидация типа файла
+                valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+                import os
+                ext = os.path.splitext(avatar.name)[1].lower()
+
+                if ext not in valid_extensions:
+                    messages.error(request, _('Поддерживаются только JPEG, PNG и GIF файлы'))
+                else:
+                    # Удаляем старый аватар если он существует
+                    if user.avatar:
+                        user.avatar.delete(save=False)
+                    # Сохраняем новый аватар
+                    user.avatar = avatar
+                    messages.success(request, _('Аватар успешно обновлен'))
+
+        # Обрабатываем смену пароля
+        password = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+
+        if password:
+            if password != password2:
+                messages.error(request, _('Пароли не совпадают'))
+            else:
+                user.set_password(password)
+                messages.success(request, _('Пароль успешно изменен'))
+                # Обновляем сессию чтобы пользователь не разлогинился
+                update_session_auth_hash(request, user)
+
+        try:
+            user.save()
+            messages.success(request, _('Настройки успешно сохранены'))
+        except Exception as e:
+            messages.error(request, _('Ошибка при сохранении настроек'))
+
+        return redirect('diary:settings')

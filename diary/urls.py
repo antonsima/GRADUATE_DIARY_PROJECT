@@ -19,18 +19,18 @@ urlpatterns = [
     path('api/dashboard/', views.DashboardAPIView.as_view(), name='dashboard'),
 
     # Authentication endpoints (перенаправляем в users приложение)
-    path('api/auth/login/', views.UserLoginView.as_view(), name='login_api'),
-    path('api/auth/register/', views.UserRegistrationView.as_view(), name='register_api'),
-    path('api/auth/token/refresh/', views.TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/auth/profile/', views.UserProfileView.as_view(), name='user_profile_api'),
-    path('api/auth/logout/', views.logout_view, name='logout_api'),
+    # path('api/auth/login/', views.UserLoginView.as_view(), name='login_api'),
+    # path('api/auth/register/', views.UserRegistrationView.as_view(), name='register_api'),
+    # path('api/auth/token/refresh/', views.TokenRefreshView.as_view(), name='token_refresh'),
+    # path('api/auth/profile/', views.UserProfileView.as_view(), name='user_profile_api'),
+    # path('api/auth/logout/', views.logout_view, name='logout_api'),
 
     # HTML pages
     path('', views.DiaryHomeView.as_view(), name='index'),
-    path('register/', views.RegistrationPageView.as_view(), name='register_page'),
-    path('login/', views.LoginPageView.as_view(), name='login_page'),
+    # path('register/', views.RegistrationPageView.as_view(), name='register_page'),
+    # path('login/', views.LoginPageView.as_view(), name='login_page'),
     path('profile/', views.ProfilePageView.as_view(), name='profile_page'),
-    path('logout/', views.LogoutPageView.as_view(), name='logout_page'),
+    # path('logout/', views.LogoutPageView.as_view(), name='logout_page'),
 
     # Diary pages
     path('entries/', views.EntryListView.as_view(), name='entry_list'),
