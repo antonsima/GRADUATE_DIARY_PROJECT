@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "markdownx",
+    "colorfield",
+
     "diary",
     "users",
 ]
@@ -158,6 +160,11 @@ TEST_EMAIL = os.getenv("TEST_EMAIL")
 TEST_PASSWORD = os.getenv("TEST_PASSWORD")
 
 # Настройки MarkdownX
+MARKDOWNX_MARKDOWN_EXTENSIONS = [
+    'markdown.extensions.extra',
+    'markdown.extensions.codehilite',
+]
+
 MARKDOWNX_MEDIA_PATH = 'markdownx/'  # Путь для загрузки изображений
 MARKDOWNX_UPLOAD_MAX_SIZE = 5242880  # 5MB максимальный размер файла
 MARKDOWNX_UPLOAD_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/gif']

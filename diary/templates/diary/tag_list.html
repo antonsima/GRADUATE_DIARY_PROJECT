@@ -1,0 +1,44 @@
+{% block title %}Теги - Дневник{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Теги</h1>
+    <a href="{% url 'diary:tag_create' %}" class="btn btn-success">Новый тег</a>
+</div>
+
+{% if tags %}
+    <div class="row">
+        {% for tag in tags %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title">
+                                <span class="badge tag-badge" style="background-color: {{ tag.color }}; color: white;">
+                                    {{ tag.name }}
+                                </span>
+                            </h5>
+                            <div>
+                                <a href="{% url 'diary:tag_update' tag.pk %}" class="btn btn-sm btn-outline-secondary">
+                                    Редактировать
+                                </a>
+                                <a href="{% url 'diary:tag_delete' tag.pk %}" class="btn btn-sm btn-outline-danger">
+                                    Удалить
+                                </a>
+                            </div>
+                        </div>
+                        <p class="card-text text-muted small">
+                            Создан: {{ tag.created_at|date:"d.m.Y" }}
+                            {% if not tag.owner %} | Стандартный тег{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        У вас пока нет тегов. <a href="{% url 'diary:tag_create' %}" class="alert-link">Создайте первый!</a>
+    </div>
+{% endif %}
+{% endblock %}

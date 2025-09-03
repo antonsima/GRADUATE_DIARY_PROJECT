@@ -1,0 +1,47 @@
+{% block title %}{{ entry.title }} - Дневник{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ entry.title }}</h1>
+    <div>
+        <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-outline-primary">Редактировать</a>
+        <a href="{% url 'diary:entry_delete' entry.pk %}" class="btn btn-outline-danger">Удалить</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="text-muted">Дата записи: {{ entry.entry_date }}</span>
+                {% if entry.mood %}
+                    <span class="ms-3">Настроение: {{ entry.mood }}</span>
+                {% endif %}
+            </div>
+            <div class="text-muted">
+                Слов: {{ entry.word_count }} | 
+                Обновлено: {{ entry.date_updated|date:"d.m.Y H:i" }}
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            {% for tag in entry.tags.all %}
+                <span class="badge tag-badge" style="background-color: {{ tag.color }};">
+                    {{ tag.name }}
+                </span>
+            {% endfor %}
+        </div>
+        
+        <div class="entry-content">
+            {{ entry.content_html|safe }}
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between">
+    <a href="{% url 'diary:entry_list' %}" class="btn btn-secondary">← Назад к списку</a>
+    <div>
+        <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-primary">Редактировать</a>
+    </div>
+</div>
+{% endblock %}

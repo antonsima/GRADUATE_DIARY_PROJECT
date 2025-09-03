@@ -1,0 +1,25 @@
+{% block title %}Удаление записи - Дневник{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Удаление записи</h2>
+            </div>
+            <div class="card-body">
+                <p>Вы уверены, что хотите удалить запись <strong>"{{ object.title }}"</strong> от {{ object.entry_date }}?</p>
+                <p>Это действие нельзя отменить.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'diary:entry_detail' object.pk %}" class="btn btn-secondary">Отмена</a>
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
