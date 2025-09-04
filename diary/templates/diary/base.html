@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой Дневник{% endblock %}</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+            .form-label {
+        color: #5a4a42;
+        font-weight: 500;
+        }
+
+        body {
+            background-color: #cabaa3;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            margin: 10px;
+            gap: 15px;
+        }
+
+        .sidebar-container {
+            flex-shrink: 0;
+        }
+
+        .content {
+            flex: 1;
+            background-color: #e4d6c9;
+            border: 1px solid #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .content h1 {
+            color: #5a4a42;
+            margin-bottom: 1rem;
+        }
+
+        .content p {
+            color: #5a4a42;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            border: 1px solid #d6c8bb;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            color: #5a4a42;
+            font-weight: 600;
+        }
+
+        .list-group-item {
+            border-color: #d6c8bb;
+            color: #5a4a42;
+        }
+
+        footer {
+            margin-top: auto;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+    {% block extra_link %}{% endblock %}
+</head>
+<body>
+<!-- Включаем навигацию через Django template -->
+{% include 'diary/navigation.html' %}
+
+<div class="main-container">
+    <!-- Включаем sidebar через Django template -->
+    <div class="sidebar-container">
+        {% include 'diary/sidebar.html' %}
+    </div>
+
+    <main class="content">
+        {% block content %}
+        <!-- Этот блок будет переопределен в дочерних шаблонах -->
+        {% endblock %}
+    </main>
+</div>
+
+<!-- Включаем footer через Django template -->
+{% include 'diary/footer.html' %}
+
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

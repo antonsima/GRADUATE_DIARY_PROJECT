@@ -1,5 +1,16 @@
-{% block title %}{% if form.instance.pk %}Редактирование тега{% else %}Новый тег{% endif %} - Дневник{% endblock %}
-
+{% extends 'diary/base.html' %}
+{% block title %}{% if form.instance.pk %}Редактирование тега - Мой дневник{% else %}Новый тег{% endif %} - Дневник{% endblock %}
+{% block extra_css %}
+<style>
+    .form-label {
+        color: #5a4a42;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+{% block extra_link %}
+<link href="/static/css/coloris.min.css" rel="stylesheet"/>
+{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
@@ -40,4 +51,25 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Подключаем скрипты colorfield -->
+<script src="/static/js/coloris.min.js"></script>
+<script>
+    // Инициализируем цветовой пикер
+    Coloris({
+        theme: 'pill',
+        themeMode: 'light',
+        alpha: false,
+        format: 'hex',
+        swatches: [
+            '#6aa958',
+            '#ca1d23',
+            '#003d92',
+            '#72757a',
+            '#e7949e'
+        ]
+    });
+</script>
 {% endblock %}

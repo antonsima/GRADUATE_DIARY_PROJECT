@@ -1,5 +1,5 @@
-{% block title %}{{ entry.title }} - Дневник{% endblock %}
-
+{% extends 'diary/base.html' %}
+{% block title %}{{ entry.title }} - Мой Дневник{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>{{ entry.title }}</h1>

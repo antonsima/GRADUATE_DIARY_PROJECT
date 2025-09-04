@@ -1,115 +1,29 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Дневник</title>
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #cabaa3;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-            padding: 0;
-        }
+{% extends 'diary/base.html' %}
+{% block title %}Мой Дневник{% endblock %}
+{% block content %}
+<h1>Добро пожаловать в ваш дневник</h1>
+<p>Здесь вы можете вести свои личные записи и мысли.</p>
 
-        .main-container {
-            display: flex;
-            flex: 1;
-            margin: 10px;
-            gap: 15px;
-        }
-
-        .sidebar-container {
-            flex-shrink: 0;
-        }
-
-        .content {
-            flex: 1;
-            background-color: #e4d6c9;
-            border: 1px solid #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .content h1 {
-            color: #5a4a42;
-            margin-bottom: 1rem;
-        }
-
-        .content p {
-            color: #5a4a42;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            border: 1px solid #d6c8bb;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-title {
-            color: #5a4a42;
-            font-weight: 600;
-        }
-
-        .list-group-item {
-            border-color: #d6c8bb;
-            color: #5a4a42;
-        }
-
-        footer {
-            margin-top: auto;
-        }
-    </style>
-</head>
-<body>
-<!-- Включаем навигацию через Django template -->
-{% include 'diary/navigation.html' %}
-
-<div class="main-container">
-    <!-- Включаем sidebar через Django template -->
-    <div class="sidebar-container">
-        {% include 'diary/sidebar.html' %}
-    </div>
-
-    <main class="content">
-        <h1>Добро пожаловать в ваш дневник</h1>
-        <p>Здесь вы можете вести свои личные записи и мысли.</p>
-
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Последние записи</h5>
-                        <ul class="list-group list-group-flush" id="recent-entries">
-                            <li class="list-group-item">Загрузка...</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Статистика</h5>
-                        <p>Всего записей: <strong id="total-entries">0</strong></p>
-                        <p>За этот месяц: <strong id="monthly-entries">0</strong></p>
-                        <p>За сегодня: <strong id="today-entries">0</strong></p>
-                    </div>
-                </div>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Последние записи</h5>
+                <ul class="list-group list-group-flush" id="recent-entries">
+                    <li class="list-group-item">Загрузка...</li>
+                </ul>
             </div>
         </div>
-    </main>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Статистика</h5>
+                <p>Всего записей: <strong id="total-entries">0</strong></p>
+                <p>За этот месяц: <strong id="monthly-entries">0</strong></p>
+                <p>За сегодня: <strong id="today-entries">0</strong></p>
+            </div>
+        </div>
+    </div>
 </div>
-
-<!-- Включаем footer через Django template -->
-{% include 'diary/footer.html' %}
-
-<script src="/static/js/bootstrap.bundle.min.js"></script>
-<!--<script src="/static/js/api.js"></script>-->
-
-</body>
-</html>
+{% endblock %}

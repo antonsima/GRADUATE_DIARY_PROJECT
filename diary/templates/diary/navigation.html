@@ -93,7 +93,10 @@
                     <a class="nav-link active" href="{% url 'diary:index' %}">Главная</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Записи</a>
+                    <a class="nav-link" href="{% url 'diary:entry_list' %}">Записи</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'diary:tag_list' %}">Теги</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Календарь</a>

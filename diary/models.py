@@ -25,7 +25,7 @@ class Tag(models.Model):
         verbose_name='Название',
         validators=[MinLengthValidator(2, "Тег должен быть не короче 2 символов")]
     )
-    color = ColorField(choices=COLOR_PALETTE)
+    color = ColorField(samples=COLOR_PALETTE)
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -40,11 +40,6 @@ class Tag(models.Model):
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
         ordering = ['name']
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

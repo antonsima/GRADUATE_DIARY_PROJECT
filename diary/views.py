@@ -18,14 +18,14 @@ class DiaryHomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Последние записи пользователя
-        context['recent_entries'] = Entry.objects.filter(
-            owner=self.request.user
-        ).order_by('-entry_date')[:5]
-        # Статистика
-        context['total_entries'] = Entry.objects.filter(
-            owner=self.request.user
-        ).count()
+        # # Последние записи пользователя
+        # context['recent_entries'] = Entry.objects.filter(
+        #     owner=self.request.user
+        # ).order_by('-entry_date')[:5]
+        # # Статистика
+        # context['total_entries'] = Entry.objects.filter(
+        #     owner=self.request.user
+        # ).count()
         return context
 
 
@@ -129,7 +129,6 @@ class EntryListView(LoginRequiredMixin, ListView):
         context['tags'] = Tag.objects.filter(
             Q(owner=self.request.user) | Q(owner__isnull=True)
         )
-        context['moods'] = Mood.objects.all()
         return context
 
 
