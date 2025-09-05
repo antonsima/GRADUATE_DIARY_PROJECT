@@ -9,6 +9,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Count
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.utils.translation import gettext_lazy as _
@@ -340,9 +341,33 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Общая статистика
+        entries = Entry.objects.filter(owner=user)
+        total_entries = entries.count()
+
+        # Записи за текущий месяц
+        now = timezone.now()
+        monthly_entries = entries.filter(
+            entry_date__year=now.year,
+            entry_date__month=now.month
+        ).count()
+
+        # Среднее количество слов через агрегацию
+        from django.db.models import Avg
+        avg_words = Entry.objects.filter(owner=user).aggregate(
+            avg_words=Avg('word_count')
+        )['avg_words'] or 0
+
+        # Количество уникальных тегов
+        total_tags = Tag.objects.filter(
+            Q(owner=user) | Q(owner__isnull=True),
+            entry__owner=user
+        ).distinct().count()
 
         # Статистика по настроению
-        mood_stats = Entry.objects.filter(owner=self.request.user).values(
+        mood_stats = Entry.objects.filter(owner=user).values(
             'mood'
         ).annotate(
             count=Count('id')
@@ -350,8 +375,8 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
 
         # Статистика по тегам
         tag_stats = Tag.objects.filter(
-            Q(owner=self.request.user) | Q(owner__isnull=True),
-            entry__owner=self.request.user
+            Q(owner=user) | Q(owner__isnull=True),
+            entry__owner=user
         ).annotate(
             count=Count('entry')
         ).order_by('-count')
@@ -359,13 +384,17 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
         # Статистика по месяцам
         current_year = datetime.now().year
         monthly_stats = Entry.objects.filter(
-            owner=self.request.user,
+            owner=user,
             entry_date__year=current_year
         ).extra(
             {'month': "EXTRACT(month FROM entry_date)"}
         ).values('month').annotate(count=Count('id')).order_by('month')
 
         context.update({
+            'total_entries': total_entries,
+            'monthly_entries': monthly_entries,
+            'avg_words': avg_words,
+            'total_tags': total_tags,
             'mood_stats': mood_stats,
             'tag_stats': tag_stats,
             'monthly_stats': monthly_stats,

@@ -80,6 +80,7 @@ class Entry(models.Model):
     mood = models.IntegerField(choices=MOOD_LEVEL, verbose_name='Уровень настроения', default=5)
     tags = models.ManyToManyField(Tag, blank=True, verbose_name='Теги')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец', null=True)
+    word_count = models.PositiveIntegerField(default=0, verbose_name='Количество слов')
 
     class Meta:
         verbose_name = 'Запись'
@@ -89,15 +90,19 @@ class Entry(models.Model):
     def save(self, *args, **kwargs):
         # Конвертация markdown в HTML (можно использовать markdown2 или другую библиотеку)
         self.content_html = markdownify(self.content)
+        # Конвертация markdown в HTML
+        self.content_html = markdownify(self.content)
+        # Подсчет слов
+        self.word_count = len(self.content.split())
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.entry_date}: {self.title}"
 
-    @property
-    def word_count(self):
-        """Количество слов в записи"""
-        return len(self.content.split())
+    # @property
+    # def word_count(self):
+    #     """Количество слов в записи"""
+    #     return len(self.content.split())
 
     def get_first_image(self):
         # Ищем первое изображение в HTML-содержимом
