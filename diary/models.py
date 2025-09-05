@@ -1,4 +1,5 @@
 import os
+import re
 
 from colorfield.fields import ColorField
 from django.db import models
@@ -20,12 +21,12 @@ class Tag(models.Model):
     )
 
     name = models.CharField(
-        max_length=50,
+        max_length=30,
         unique=True,
         verbose_name='Название',
         validators=[MinLengthValidator(2, "Тег должен быть не короче 2 символов")]
     )
-    color = ColorField(samples=COLOR_PALETTE)
+    color = ColorField(samples=COLOR_PALETTE, default="#e7949e")
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -35,6 +36,17 @@ class Tag(models.Model):
         help_text='Для стандартных тегов владелец не указан',
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+        blank=True,
+        verbose_name='Слаг'
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name, allow_unicode=True)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Тег'
@@ -86,3 +98,12 @@ class Entry(models.Model):
     def word_count(self):
         """Количество слов в записи"""
         return len(self.content.split())
+
+    def get_first_image(self):
+        # Ищем первое изображение в HTML-содержимом
+        if self.content_html:
+            # Используем регулярное выражение для поиска тегов img
+            img_tags = re.findall(r'<img[^>]+src="([^">]+)"', self.content_html)
+            if img_tags:
+                return img_tags[0]
+        return None

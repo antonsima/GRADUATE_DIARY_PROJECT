@@ -112,7 +112,7 @@ class EntryListView(LoginRequiredMixin, ListView):
         # Фильтрация по настроению
         mood_id = self.request.GET.get('mood')
         if mood_id:
-            queryset = queryset.filter(mood_id=mood_id)
+            queryset = queryset.filter(mood=mood_id)
 
         # Поиск
         search_query = self.request.GET.get('q')
@@ -129,6 +129,8 @@ class EntryListView(LoginRequiredMixin, ListView):
         context['tags'] = Tag.objects.filter(
             Q(owner=self.request.user) | Q(owner__isnull=True)
         )
+        context['mood_levels'] = Entry.MOOD_LEVEL
+
         return context
 
 
