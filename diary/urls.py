@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views import SettingsPageView, ProfilePageView, DiaryHomeView, EntryListView, EntryCreateView, EntryDetailView, \
-    EntryUpdateView, EntryDeleteView, TagListView, TagCreateView, TagUpdateView, TagDeleteView
+    EntryUpdateView, EntryDeleteView, TagListView, TagCreateView, TagUpdateView, TagDeleteView, EntryCalendarView, \
+    StatisticsView
 
 app_name = 'diary'
 
@@ -9,6 +10,7 @@ app_name = 'diary'
 urlpatterns = [
     path('', DiaryHomeView.as_view(), name='index'),
     path('profile/', ProfilePageView.as_view(), name='profile_page'),
+    path('settings/', SettingsPageView.as_view(), name='settings'),
 
     path('entries/', EntryListView.as_view(), name='entry_list'),
     path('entries/create/', EntryCreateView.as_view(), name='entry_create'),
@@ -21,5 +23,7 @@ urlpatterns = [
     path('tags/<int:pk>/update/', TagUpdateView.as_view(), name='tag_update'),
     path('tags/<int:pk>/delete/', TagDeleteView.as_view(), name='tag_delete'),
 
-    path('settings/', SettingsPageView.as_view(), name='settings'),
+    path('calendar/', EntryCalendarView.as_view(), name='entry_calendar'),
+    path('calendar/<int:year>/<int:month>/', EntryCalendarView.as_view(), name='entry_calendar_month'),
+    path('statistics/', StatisticsView.as_view(), name='statistics'),
 ]

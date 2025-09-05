@@ -1,8 +1,12 @@
+import calendar
+from collections import defaultdict
+from datetime import datetime
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -242,3 +246,130 @@ class TagDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, self.success_message)
         return super().delete(request, *args, **kwargs)
+
+
+class EntryCalendarView(LoginRequiredMixin, TemplateView):
+    template_name = 'diary/calendar.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Получаем год и месяц из URL или используем текущие
+        year = int(self.kwargs.get('year', datetime.now().year))
+        month = int(self.kwargs.get('month', datetime.now().month))
+
+        # Получаем параметры фильтрации
+        tag_slug = self.request.GET.get('tag')
+        mood_id = self.request.GET.get('mood')
+        search_query = self.request.GET.get('q')
+
+        # Создаем календарь
+        cal = calendar.monthcalendar(year, month)
+
+        # Получаем записи пользователя за указанный месяц
+        entries = Entry.objects.filter(
+            owner=self.request.user,
+            entry_date__year=year,
+            entry_date__month=month
+        )
+
+        # Применяем фильтры
+        if tag_slug:
+            entries = entries.filter(tags__slug=tag_slug)
+        if mood_id:
+            entries = entries.filter(mood=mood_id)
+        if search_query:
+            entries = entries.filter(
+                Q(title__icontains=search_query) |
+                Q(content__icontains=search_query)
+            )
+
+        # Создаем словарь для хранения записей по дням
+        entries_by_day = defaultdict(list)
+        for entry in entries:
+            entries_by_day[entry.entry_date.day].append(entry)
+
+        # Вычисляем предыдущий и следующий месяц
+        if month == 1:
+            prev_month = 12
+            prev_year = year - 1
+        else:
+            prev_month = month - 1
+            prev_year = year
+
+        if month == 12:
+            next_month = 1
+            next_year = year + 1
+        else:
+            next_month = month + 1
+            next_year = year
+
+        # Создаем строку запроса для сохранения параметров фильтрации
+        query_params = self.request.GET.copy()
+        if 'year' in query_params:
+            del query_params['year']
+        if 'month' in query_params:
+            del query_params['month']
+        query_string = query_params.urlencode()
+
+        # Получаем все теги для фильтра
+        tags = Tag.objects.filter(
+            Q(owner=self.request.user) | Q(owner__isnull=True)
+        ).distinct()
+
+        context.update({
+            'calendar': cal,
+            'year': year,
+            'month': month,
+            'month_name': calendar.month_name[month],
+            'entries_by_day': dict(entries_by_day),
+            'prev_year': prev_year,
+            'prev_month': prev_month,
+            'next_year': next_year,
+            'next_month': next_month,
+            'query_string': query_string,
+            'tags': tags,
+            'mood_levels': Entry.MOOD_LEVEL,
+        })
+
+        return context
+
+
+class StatisticsView(LoginRequiredMixin, TemplateView):
+    template_name = 'diary/statistics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Статистика по настроению
+        mood_stats = Entry.objects.filter(owner=self.request.user).values(
+            'mood'
+        ).annotate(
+            count=Count('id')
+        ).order_by('mood')
+
+        # Статистика по тегам
+        tag_stats = Tag.objects.filter(
+            Q(owner=self.request.user) | Q(owner__isnull=True),
+            entry__owner=self.request.user
+        ).annotate(
+            count=Count('entry')
+        ).order_by('-count')
+
+        # Статистика по месяцам
+        current_year = datetime.now().year
+        monthly_stats = Entry.objects.filter(
+            owner=self.request.user,
+            entry_date__year=current_year
+        ).extra(
+            {'month': "EXTRACT(month FROM entry_date)"}
+        ).values('month').annotate(count=Count('id')).order_by('month')
+
+        context.update({
+            'mood_stats': mood_stats,
+            'tag_stats': tag_stats,
+            'monthly_stats': monthly_stats,
+            'current_year': current_year,
+        })
+
+        return context
