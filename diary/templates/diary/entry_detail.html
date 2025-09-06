@@ -1,5 +1,120 @@
 {% extends 'diary/base.html' %}
 {% block title %}{{ entry.title }} - Мой Дневник{% endblock %}
+{% block extra_css %}
+<style>
+    /* Ограничение ширины контента */
+    .entry-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Стили для заголовка с переносом текста */
+    .entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .entry-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        line-height: 1.3;
+        margin: 0;
+        flex: 1;
+        min-width: 0; /* Важно для правильного переноса в flex-контейнере */
+    }
+
+    .entry-actions {
+        flex-shrink: 0;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    /* Стили для содержимого записи */
+    .entry-content {
+        max-width: 100%;
+        overflow-wrap: break-word;
+    }
+
+    .entry-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .entry-content p,
+    .entry-content li,
+    .entry-content blockquote {
+        line-height: 1.6;
+    }
+
+    .entry-content pre {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+
+    .entry-content code {
+        background-color: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+
+    /* Стили для тегов */
+    .tag-badge {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: white;
+        font-size: 0.85em;
+        padding: 0.4em 0.6em;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .entry-container {
+            padding: 0 15px;
+        }
+
+        .entry-header {
+            flex-direction: column;
+        }
+
+        .entry-title {
+            font-size: 1.75rem;
+        }
+
+        .entry-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .entry-title {
+            font-size: 1.5rem;
+        }
+
+        .entry-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .entry-actions .btn {
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
 {% block content %}
 {% if messages %}
 <div class="messages">
@@ -11,47 +126,49 @@
 </div>
 {% endif %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{{ entry.title }}</h1>
-    <div>
-        <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-outline-primary">Редактировать</a>
-        <a href="{% url 'diary:entry_delete' entry.pk %}" class="btn btn-outline-danger">Удалить</a>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <span class="text-muted">Дата записи: {{ entry.entry_date }}</span>
-                {% if entry.mood %}
-                    <span class="ms-3">Настроение: {{ entry.mood }}</span>
-                {% endif %}
-            </div>
-            <div class="text-muted">
-                Слов: {{ entry.word_count }} | 
-                Обновлено: {{ entry.date_updated|date:"d.m.Y H:i" }}
-            </div>
-        </div>
-        
-        <div class="mb-3">
-            {% for tag in entry.tags.all %}
-                <span class="badge tag-badge" style="background-color: {{ tag.color }};">
-                    {{ tag.name }}
-                </span>
-            {% endfor %}
-        </div>
-        
-        <div class="entry-content">
-            {{ entry.content_html|safe }}
+<div class="entry-container">
+    <div class="entry-header">
+        <h1 class="entry-title">{{ entry.title }}</h1>
+        <div class="entry-actions">
+            <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-outline-primary">Редактировать</a>
+            <a href="{% url 'diary:entry_delete' entry.pk %}" class="btn btn-outline-danger">Удалить</a>
         </div>
     </div>
-</div>
 
-<div class="d-flex justify-content-between">
-    <a href="{% url 'diary:entry_list' %}" class="btn btn-secondary">← Назад к списку</a>
-    <div>
-        <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-primary">Редактировать</a>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                <div class="mb-2">
+                    <span class="text-muted">Дата записи: {{ entry.entry_date }}</span>
+                    {% if entry.mood %}
+                        <span class="ms-3">Настроение: {{ entry.get_mood_display }}</span>
+                    {% endif %}
+                </div>
+                <div class="text-muted">
+                    Слов: {{ entry.word_count }} |
+                    Обновлено: {{ entry.date_updated|date:"d.m.Y H:i" }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {% for tag in entry.tags.all %}
+                    <span class="badge tag-badge" style="background-color: {{ tag.color }};">
+                        {{ tag.name }}
+                    </span>
+                {% endfor %}
+            </div>
+
+            <div class="entry-content">
+                {{ entry.content_html|safe }}
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between flex-wrap">
+        <a href="{% url 'diary:entry_list' %}" class="btn btn-secondary mb-2">← Назад к списку</a>
+        <div>
+            <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-primary mb-2">Редактировать</a>
+        </div>
     </div>
 </div>
 {% endblock %}

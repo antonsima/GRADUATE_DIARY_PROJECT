@@ -88,23 +88,25 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'diary:index' %}">Главная</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'diary:entry_list' %}">Записи</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'diary:tag_list' %}">Теги</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Календарь</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Статистика</a>
-                </li>
-            </ul>
+{% load diary_extras %}
+
+<ul class="navbar-nav me-auto">
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'index' %}" href="{% url 'diary:index' %}">Главная</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active_in 'entry_list' 'entry_create' 'entry_detail' 'entry_update' 'entry_delete' %}" href="{% url 'diary:entry_list' %}">Записи</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active_in 'tag_list' 'tag_create' 'tag_update' 'tag_delete' %}" href="{% url 'diary:tag_list' %}">Теги</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active_in 'entry_calendar' 'entry_calendar_month' %}" href="{% url 'diary:entry_calendar' %}">Календарь</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'statistics' %}" href="{% url 'diary:statistics' %}">Статистика</a>
+    </li>
+</ul>
 
             {% if user.is_authenticated %}
             <!-- Блок для авторизованных пользователей -->

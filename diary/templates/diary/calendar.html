@@ -117,38 +117,41 @@
         padding: 1rem;
         border-bottom: 1px solid #e9ecef;
     }
+
+        /* Обеспечиваем одинаковую высоту для всех карточек в строке */
+    .card {
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
 </style>
 {% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="display-5 fw-bold text-brown">Календарь записей</h1>
     <div>
-        <a href="{% url 'diary:statistics' %}" class="btn btn-info">
-            <i class="fas fa-chart-bar me-2"></i>Статистика
-        </a>
-        <a href="{% url 'diary:entry_create' %}" class="btn btn-success me-2">
-            <i class="fas fa-plus me-2"></i>Новая запись
-        </a>
+        <a href="{% url 'diary:statistics' %}" class="btn btn-info">Статистика</a>
+        <a href="{% url 'diary:entry_create' %}" class="btn btn-success me-2">Новая запись</a>
     </div>
 </div>
 
 <!-- Фильтры и поиск -->
-<div class="card filter-card mb-4">
+<div class="card mb-4">
     <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
+        <form method="get" class="row g-3">
             <!-- Скрытые поля для сохранения параметров месяца и года -->
             <input type="hidden" name="year" value="{{ year }}">
             <input type="hidden" name="month" value="{{ month }}">
 
             <div class="col-md-4">
-                <label for="q" class="form-label fw-medium">Поиск</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="text" class="form-control" id="q" name="q" value="{{ request.GET.q }}" placeholder="Поиск по заголовку или содержанию...">
-                </div>
+                <label for="q" class="form-label">Поиск</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ request.GET.q }}" placeholder="Поиск по заголовку или содержанию...">
             </div>
             <div class="col-md-3">
-                <label for="tag" class="form-label fw-medium">Тег</label>
+                <label for="tag" class="form-label">Тег</label>
                 <select class="form-select" id="tag" name="tag">
                     <option value="">Все теги</option>
                     {% for tag in tags %}
@@ -159,7 +162,7 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="mood" class="form-label fw-medium">Настроение</label>
+                <label for="mood" class="form-label">Настроение</label>
                 <select class="form-select" id="mood" name="mood">
                     <option value="">Все настроения</option>
                     {% for mood_value, mood_label in mood_levels %}
@@ -169,13 +172,8 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-2 d-flex">
-                <button type="submit" class="btn btn-primary w-100 me-2">
-                    <i class="fas fa-filter me-2"></i>Применить
-                </button>
-                <a href="{% url 'diary:entry_calendar_month' year month %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times"></i>
-                </a>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Применить</button>
             </div>
         </form>
     </div>

@@ -1,6 +1,6 @@
 import calendar
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, date
 
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
@@ -23,14 +23,84 @@ class DiaryHomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # # Последние записи пользователя
-        # context['recent_entries'] = Entry.objects.filter(
-        #     owner=self.request.user
-        # ).order_by('-entry_date')[:5]
-        # # Статистика
-        # context['total_entries'] = Entry.objects.filter(
-        #     owner=self.request.user
-        # ).count()
+
+        if self.request.user.is_authenticated:
+            user = self.request.user
+
+            # Статистика записей
+            entries = Entry.objects.filter(owner=user)
+            total_entries = entries.count()
+
+            # Записи за текущий месяц
+            now = timezone.now()
+            monthly_entries = entries.filter(
+                entry_date__year=now.year,
+                entry_date__month=now.month
+            ).count()
+
+            # Записи за сегодня
+            today = date.today()
+            today_entries = entries.filter(entry_date=today).count()
+
+            # Последние 5 записей
+            recent_entries = entries.order_by('-entry_date')[:5]
+
+            # Статистика по настроению
+            mood_stats_data = entries.values('mood').annotate(count=Count('id')).order_by('mood')
+            total_with_mood = sum(item['count'] for item in mood_stats_data)
+
+            # Цвета для разных настроений
+            mood_colors = {
+                1: '#ca1d23',  # Очень плохое - красный
+                2: '#e7949e',  # Плохое - розовый
+                3: '#72757a',  # Нейтральное - серый
+                4: '#a8927c',  # Хорошее - бежевый
+                5: '#6aa958'  # Отличное - зеленый
+            }
+
+            mood_stats = []
+            for item in mood_stats_data:
+                mood_value = item['mood']
+                count = item['count']
+                percentage = (count / total_with_mood * 100) if total_with_mood > 0 else 0
+
+                # Находим текстовое представление настроения
+                mood_display = next((display for value, display in Entry.MOOD_LEVEL if value == mood_value),
+                                    str(mood_value))
+
+                mood_stats.append({
+                    'mood': mood_value,
+                    'mood_display': mood_display,
+                    'count': count,
+                    'percentage': round(percentage, 1),
+                    'color': mood_colors.get(mood_value, '#72757a')
+                })
+
+            # Популярные теги
+            popular_tags = Tag.objects.filter(
+                Q(owner=user) | Q(owner__isnull=True),
+                entry__owner=user
+            ).annotate(count=Count('entry')).order_by('-count')[:10]
+
+            context.update({
+                'total_entries': total_entries,
+                'monthly_entries': monthly_entries,
+                'today_entries': today_entries,
+                'recent_entries': recent_entries,
+                'mood_stats': mood_stats,
+                'popular_tags': popular_tags,
+            })
+        else:
+            # Данные для неаутентифицированных пользователей
+            context.update({
+                'total_entries': 0,
+                'monthly_entries': 0,
+                'today_entries': 0,
+                'recent_entries': [],
+                'mood_stats': [],
+                'popular_tags': [],
+            })
+
         return context
 
 
@@ -127,7 +197,16 @@ class EntryListView(LoginRequiredMixin, ListView):
                 Q(content__icontains=search_query)
             )
 
-        return queryset.order_by('-entry_date')
+        # Сортировка
+        sort_by = self.request.GET.get('sort_by', '-entry_date')  # По умолчанию сортируем по дате записи (новые сначала)
+        if sort_by in ['entry_date', '-entry_date', 'date_created', '-date_created',
+                      'date_updated', '-date_updated', 'title', '-title',
+                      'word_count', '-word_count', 'mood', '-mood']:
+            queryset = queryset.order_by(sort_by)
+        else:
+            queryset = queryset.order_by('-entry_date')  # Значение по умолчанию
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

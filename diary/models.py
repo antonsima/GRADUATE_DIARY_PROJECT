@@ -85,7 +85,6 @@ class Entry(models.Model):
     class Meta:
         verbose_name = 'Запись'
         verbose_name_plural = 'Записи'
-        ordering = ['-entry_date', '-date_created']
 
     def save(self, *args, **kwargs):
         # Конвертация markdown в HTML (можно использовать markdown2 или другую библиотеку)

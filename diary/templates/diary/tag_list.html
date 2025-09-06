@@ -15,6 +15,16 @@
 </style>
 {% endblock %}
 {% block content %}
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Теги</h1>
     <a href="{% url 'diary:tag_create' %}" class="btn btn-success">Новый тег</a>
@@ -52,7 +62,7 @@
     </div>
 {% else %}
     <div class="alert alert-info">
-        У вас пока нет тегов. <a href="{% url 'diary:tag_create' %}" class="alert-link">Создайте первый!</a>
+        У вас пока нет тегов <a href="{% url 'diary:tag_create' %}" class="alert-link">Создайте первый!</a>
     </div>
 {% endif %}
 {% endblock %}
