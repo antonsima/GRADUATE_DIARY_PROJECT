@@ -93,7 +93,7 @@
             <div class="stat-icon">
                 <i class="fas fa-book"></i>
             </div>
-            <div class="stat-number">{{ total_entries }}</div>
+            <div class="stat-number">{{ sidebar_total_entries|default:0 }}</div>
             <div class="stat-label">Всего записей</div>
         </div>
     </div>
@@ -103,7 +103,7 @@
             <div class="stat-icon">
                 <i class="fas fa-calendar-alt"></i>
             </div>
-            <div class="stat-number">{{ monthly_entries }}</div>
+            <div class="stat-number">{{ sidebar_monthly_entries|default:0 }}</div>
             <div class="stat-label">Записей за этот месяц</div>
         </div>
     </div>

@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import SettingsPageView, ProfilePageView, DiaryHomeView, EntryListView, EntryCreateView, EntryDetailView, \
     EntryUpdateView, EntryDeleteView, TagListView, TagCreateView, TagUpdateView, TagDeleteView, EntryCalendarView, \
-    StatisticsView
+    StatisticsView, faq, contacts
 
 app_name = 'diary'
 
@@ -26,4 +26,7 @@ urlpatterns = [
     path('calendar/', EntryCalendarView.as_view(), name='entry_calendar'),
     path('calendar/<int:year>/<int:month>/', EntryCalendarView.as_view(), name='entry_calendar_month'),
     path('statistics/', StatisticsView.as_view(), name='statistics'),
+
+    path('faq/', faq, name='faq'),
+    path('contacts/', contacts, name='contacts'),
 ]

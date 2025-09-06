@@ -152,9 +152,9 @@
 
             <div class="mb-3">
                 {% for tag in entry.tags.all %}
-                    <span class="badge tag-badge" style="background-color: {{ tag.color }};">
-                        {{ tag.name }}
-                    </span>
+                                <a href="{% url 'diary:entry_list' %}?tag={{ tag.slug }}" class="badge tag-badge" style="background-color: {{ tag.color }}; color: white;">
+                                    {{ tag.name }} ({{ tag.count }})
+                                </a>
                 {% endfor %}
             </div>
 

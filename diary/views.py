@@ -29,18 +29,6 @@ class DiaryHomeView(TemplateView):
 
             # Статистика записей
             entries = Entry.objects.filter(owner=user)
-            total_entries = entries.count()
-
-            # Записи за текущий месяц
-            now = timezone.now()
-            monthly_entries = entries.filter(
-                entry_date__year=now.year,
-                entry_date__month=now.month
-            ).count()
-
-            # Записи за сегодня
-            today = date.today()
-            today_entries = entries.filter(entry_date=today).count()
 
             # Последние 5 записей
             recent_entries = entries.order_by('-entry_date')[:5]
@@ -76,19 +64,9 @@ class DiaryHomeView(TemplateView):
                     'color': mood_colors.get(mood_value, '#72757a')
                 })
 
-            # Популярные теги
-            popular_tags = Tag.objects.filter(
-                Q(owner=user) | Q(owner__isnull=True),
-                entry__owner=user
-            ).annotate(count=Count('entry')).order_by('-count')[:10]
-
             context.update({
-                'total_entries': total_entries,
-                'monthly_entries': monthly_entries,
-                'today_entries': today_entries,
                 'recent_entries': recent_entries,
                 'mood_stats': mood_stats,
-                'popular_tags': popular_tags,
             })
         else:
             # Данные для неаутентифицированных пользователей
@@ -290,6 +268,11 @@ class TagListView(LoginRequiredMixin, ListView):
             Q(owner=self.request.user) | Q(owner__isnull=True)
         ).order_by('name')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        return context
+
 
 class TagCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Tag
@@ -424,14 +407,6 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
 
         # Общая статистика
         entries = Entry.objects.filter(owner=user)
-        total_entries = entries.count()
-
-        # Записи за текущий месяц
-        now = timezone.now()
-        monthly_entries = entries.filter(
-            entry_date__year=now.year,
-            entry_date__month=now.month
-        ).count()
 
         # Среднее количество слов через агрегацию
         from django.db.models import Avg
@@ -470,8 +445,6 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
         ).values('month').annotate(count=Count('id')).order_by('month')
 
         context.update({
-            'total_entries': total_entries,
-            'monthly_entries': monthly_entries,
             'avg_words': avg_words,
             'total_tags': total_tags,
             'mood_stats': mood_stats,
@@ -481,3 +454,67 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
         })
 
         return context
+
+
+def faq(request):
+    faq_items = [
+        {
+            'question': 'Как создать новую запись в дневнике?',
+            'answer': 'Для создания новой записи нажмите кнопку "Новая запись" в верхней части страницы или на боковой панели. Заполните заголовок, содержание, выберите настроение и добавьте теги.'
+        },
+        {
+            'question': 'Как добавить изображения к записи?',
+            'answer': 'В редакторе записи вы можете загружать изображения, используя перетаскивание изображений в редактор. Поддерживаются форматы JPG, PNG и GIF.'
+        },
+        {
+            'question': 'Как искать записи по тегам?',
+            'answer': 'На странице всех записей используйте фильтр по тегам в панели поиска. Вы также можете кликнуть на любой тег в записи для фильтрации по нему.'
+        },
+        {
+            'question': 'Как работает календарь записей?',
+            'answer': 'Календарь показывает дни, в которые вы делали записи. Кликните на любой день с записью, чтобы перейти к просмотру этой записи.'
+        },
+        {
+            'question': 'Как создать и управлять тегами?',
+            'answer': 'Перейдите в раздел "Теги" через боковое меню. Там вы можете создавать новые теги, редактировать существующие и назначать им цвета. Теги помогают организовать ваши записи по темам.'
+        },
+        {
+            'question': 'Как работает статистика?',
+            'answer': 'В разделе "Статистика" вы можете увидеть обзор вашей активности: количество записей, распределение по настроениям, популярные теги и активность по месяцам. Это помогает отслеживать ваши привычки и настроения.'
+        },
+        {
+            'question': 'Можно ли редактировать старые записи?',
+            'answer': 'Да, вы можете редактировать любую запись. Просто откройте запись и нажмите кнопку "Редактировать". Все изменения сохранят исходную дату создания, но обновят дату изменения.'
+        },
+        {
+            'question': 'Как работает поиск по записям?',
+            'answer': 'На странице всех записей есть строка поиска, где вы можете искать по заголовкам и содержимому записей. Вы также можете использовать фильтры по тегам, настроению и сортировке.'
+        },
+        {
+            'question': 'Можно ли экспортировать свои записи?',
+            'answer': 'В настоящее время функция экспорта находится в разработке. В будущих обновлениях мы добавим возможность экспорта записей в различные форматы (PDF, TXT, JSON).'
+        },
+        {
+            'question': 'Как изменить настройки профиля?',
+            'answer': 'Перейдите в раздел "Настройки" через меню пользователя. Там вы можете изменить имя, фамилию, аватар и пароль.'
+        }
+    ]
+
+    return render(request, 'diary/faq.html', {'faq_items': faq_items})
+
+
+def contacts(request):
+    contact_info = {
+        'email': 'anton_sima@mail.com',
+        'phone': '+7 (123) 456-78-90',
+        'address': 'г. Москва, ул. Примерная, д. 123, офис 456',
+        'social_media': [
+            {'name': 'Telegram', 'url': 'https://t.me/baxcha241', 'icon': 'fab fa-telegram'},
+            {'name': 'VK', 'url': 'https://vk.com/baxcha241', 'icon': 'fab fa-vk'},
+            {'name': 'YouTube', 'url': 'https://youtube.com/@baxcha241', 'icon': 'fab fa-youtube'},
+            {'name': 'Instagram', 'url': 'https://instagram.com/anton_simak', 'icon': 'fab fa-instagram'},
+        ],
+        'support_hours': 'Понедельник - Пятница, 9:00 - 18:00 по московскому времени'
+    }
+
+    return render(request, 'diary/contacts.html', {'contact_info': contact_info})

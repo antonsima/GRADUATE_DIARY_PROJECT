@@ -94,6 +94,7 @@
     <li class="nav-item">
         <a class="nav-link {% is_active 'index' %}" href="{% url 'diary:index' %}">Главная</a>
     </li>
+    {% if user.is_authenticated %}
     <li class="nav-item">
         <a class="nav-link {% is_active_in 'entry_list' 'entry_create' 'entry_detail' 'entry_update' 'entry_delete' %}" href="{% url 'diary:entry_list' %}">Записи</a>
     </li>
@@ -106,7 +107,14 @@
     <li class="nav-item">
         <a class="nav-link {% is_active 'statistics' %}" href="{% url 'diary:statistics' %}">Статистика</a>
     </li>
-</ul>
+    {% endif %}
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'faq' %}" href="{% url 'diary:faq' %}">FAQ</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'contacts' %}" href="{% url 'diary:contacts' %}">Контакты</a>
+    </li>
+    </ul>
 
             {% if user.is_authenticated %}
             <!-- Блок для авторизованных пользователей -->

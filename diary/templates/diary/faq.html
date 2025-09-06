@@ -1,0 +1,192 @@
+{% extends 'diary/base.html' %}
+{% block title %}FAQ - Мой Дневник{% endblock %}
+{% block extra_css %}
+<style>
+    .faq-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .faq-item {
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+
+    .faq-item:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .faq-question {
+        padding: 1.5rem;
+        background-color: #f8f3ee;
+        border: none;
+        width: 100%;
+        text-align: left;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #5a4a42;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .faq-answer {
+        padding: 0 1.5rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+        background-color: white;
+    }
+
+    .faq-item.active .faq-answer {
+        max-height: 500px;
+        padding: 1.5rem;
+    }
+
+    .faq-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+    }
+
+    .search-box {
+        margin-bottom: 2rem;
+    }
+
+    .support-section {
+        background-color: #f8f3ee;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-top: 3rem;
+    }
+
+    @media (max-width: 768px) {
+        .faq-question {
+            padding: 1rem;
+            font-size: 1rem;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 1rem;
+        }
+
+        .support-section {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-5 fw-bold text-brown">Часто задаваемые вопросы</h1>
+        <a href="{% url 'diary:contacts' %}" class="btn btn-primary">
+            <i class="fas fa-envelope me-2"></i>Связаться с нами
+        </a>
+    </div>
+
+    <div class="search-box">
+        <div class="input-group">
+            <input type="text" id="faq-search" class="form-control" placeholder="Поиск по вопросам и ответам...">
+            <button class="btn btn-outline-secondary" type="button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="faq-container">
+        {% for item in faq_items %}
+        <div class="faq-item">
+            <button class="faq-question">
+                <span>{{ item.question }}</span>
+                <i class="fas fa-chevron-down faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+                <p class="mb-0">{{ item.answer }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="support-section text-center">
+        <h3><i class="fas fa-question-circle me-2"></i>Не нашли ответ на свой вопрос?</h3>
+        <p class="mb-3">Наша служба поддержки всегда готова помочь вам с любыми вопросами о работе дневника</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'diary:contacts' %}" class="btn btn-success">
+                <i class="fas fa-envelope me-2"></i>Написать в поддержку
+            </a>
+            <a href="{% url 'diary:entry_create' %}" class="btn btn-outline-primary">
+                <i class="fas fa-plus me-2"></i>Создать запись
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Работа аккордеона FAQ
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+
+            question.addEventListener('click', () => {
+                // Закрываем все открытые элементы
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item && otherItem.classList.contains('active')) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+
+                // Переключаем текущий элемент
+                item.classList.toggle('active');
+            });
+        });
+
+        // Поиск по FAQ
+        const searchInput = document.getElementById('faq-search');
+        const searchButton = searchInput.nextElementSibling;
+
+        function performSearch() {
+            const searchText = searchInput.value.toLowerCase();
+
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question span').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+
+                if (question.includes(searchText) || answer.includes(searchText)) {
+                    item.style.display = 'block';
+                    // Если нашли совпадение, открываем этот пункт
+                    if (searchText && !item.classList.contains('active')) {
+                        item.classList.add('active');
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', performSearch);
+        searchButton.addEventListener('click', performSearch);
+
+        // Обработка нажатия Enter в поле поиска
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Открываем первый пункт FAQ по умолчанию
+        if (faqItems.length > 0) {
+            faqItems[0].classList.add('active');
+        }
+    });
+</script>
+{% endblock %}
