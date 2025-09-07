@@ -185,11 +185,12 @@ docker-compose logs
 ssh -l your_VM_login your_VM_public_IP
 ~~~
 
-Обновите систему и установите Docker:
+Обновите систему и установите Docker и Nginx:
 
 ~~~
 sudo apt update && sudo apt upgrade -y
 sudo apt install docker.io docker-compose -y
+sudo apt install nginx
 sudo systemctl enable docker
 sudo systemctl start docker
 ~~~
@@ -316,5 +317,5 @@ cat ~/GRADUATE_DIARY_PROJECT/.env
 
 ## Готовое развернутое приложение доступно по адресу
 ~~~
-заполнить после развертывания приложения на сервере
+158.160.184.104
 ~~~
