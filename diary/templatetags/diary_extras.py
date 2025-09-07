@@ -5,9 +5,11 @@ from diary.models import Entry
 
 register = template.Library()
 
+
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
 
 @register.filter
 def get_mood_display(value):
@@ -26,22 +28,22 @@ def is_active(context, url_name):
     Использование: {% is_active 'url_name' %}
     """
     try:
-        current_url = context['request'].path
+        current_url = context["request"].path
         resolved_url = resolve(current_url)
 
         # Проверяем совпадение имен URL
         if resolved_url.url_name == url_name:
-            return 'active'
+            return "active"
 
         # Для некоторых URL может потребоваться проверка по namespace
-        if hasattr(resolved_url, 'app_name') and resolved_url.app_name == 'diary':
+        if hasattr(resolved_url, "app_name") and resolved_url.app_name == "diary":
             if resolved_url.url_name == url_name:
-                return 'active'
+                return "active"
 
-    except:
-        pass
+    finally:
+        print("pass")
 
-    return ''
+    return ""
 
 
 @register.simple_tag(takes_context=True)
@@ -51,13 +53,13 @@ def is_active_pattern(context, pattern):
     Использование: {% is_active_pattern 'entries' %}
     """
     try:
-        current_url = context['request'].path
+        current_url = context["request"].path
         if pattern in current_url:
-            return 'active'
-    except:
-        pass
+            return "active"
+    finally:
+        print("pass")
 
-    return ''
+    return ""
 
 
 @register.simple_tag(takes_context=True)
@@ -66,9 +68,10 @@ def is_active_in(context, *url_names):
     Проверяет, находится ли текущий URL в списке имен.
     """
     try:
-        current_url_name = resolve(context['request'].path).url_name
+        current_url_name = resolve(context["request"].path).url_name
         if current_url_name in url_names:
-            return 'active'
-    except:
-        pass
-    return ''
+            return "active"
+    finally:
+        print("pass")
+
+    return ""

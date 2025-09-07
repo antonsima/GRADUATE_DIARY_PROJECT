@@ -1,25 +1,25 @@
 import calendar
 from collections import defaultdict
-from datetime import datetime, date
+from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Q, Count
-from django.shortcuts import render, redirect
+from django.db.models import Count, Q
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.utils import timezone
-from django.views import View
-from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.utils.translation import gettext_lazy as _
+from django.views import View
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  TemplateView, UpdateView)
 
-from diary.forms import TagForm, EntryForm
+from diary.forms import EntryForm, TagForm
 from diary.models import Entry, Tag
 
 
 class DiaryHomeView(TemplateView):
-    template_name = 'diary/index.html'
+    template_name = "diary/index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -31,65 +31,81 @@ class DiaryHomeView(TemplateView):
             entries = Entry.objects.filter(owner=user)
 
             # Последние 5 записей
-            recent_entries = entries.order_by('-entry_date')[:6]
+            recent_entries = entries.order_by("-entry_date")[:6]
 
             # Статистика по настроению
-            mood_stats_data = entries.values('mood').annotate(count=Count('id')).order_by('mood')
-            total_with_mood = sum(item['count'] for item in mood_stats_data)
+            mood_stats_data = (
+                entries.values("mood").annotate(count=Count("id")).order_by("mood")
+            )
+            total_with_mood = sum(item["count"] for item in mood_stats_data)
 
             # Цвета для разных настроений
             mood_colors = {
-                1: '#ca1d23',  # Очень плохое - красный
-                2: '#e7949e',  # Плохое - розовый
-                3: '#72757a',  # Нейтральное - серый
-                4: '#a8927c',  # Хорошее - бежевый
-                5: '#6aa958'  # Отличное - зеленый
+                1: "#ca1d23",  # Очень плохое - красный
+                2: "#e7949e",  # Плохое - розовый
+                3: "#72757a",  # Нейтральное - серый
+                4: "#a8927c",  # Хорошее - бежевый
+                5: "#6aa958",  # Отличное - зеленый
             }
 
             mood_stats = []
             for item in mood_stats_data:
-                mood_value = item['mood']
-                count = item['count']
-                percentage = (count / total_with_mood * 100) if total_with_mood > 0 else 0
+                mood_value = item["mood"]
+                count = item["count"]
+                percentage = (
+                    (count / total_with_mood * 100) if total_with_mood > 0 else 0
+                )
 
                 # Находим текстовое представление настроения
-                mood_display = next((display for value, display in Entry.MOOD_LEVEL if value == mood_value),
-                                    str(mood_value))
+                mood_display = next(
+                    (
+                        display
+                        for value, display in Entry.MOOD_LEVEL
+                        if value == mood_value
+                    ),
+                    str(mood_value),
+                )
 
-                mood_stats.append({
-                    'mood': mood_value,
-                    'mood_display': mood_display,
-                    'count': count,
-                    'percentage': round(percentage, 1),
-                    'color': mood_colors.get(mood_value, '#72757a')
-                })
+                mood_stats.append(
+                    {
+                        "mood": mood_value,
+                        "mood_display": mood_display,
+                        "count": count,
+                        "percentage": round(percentage, 1),
+                        "color": mood_colors.get(mood_value, "#72757a"),
+                    }
+                )
 
-            context.update({
-                'recent_entries': recent_entries,
-                'mood_stats': mood_stats,
-            })
+            context.update(
+                {
+                    "recent_entries": recent_entries,
+                    "mood_stats": mood_stats,
+                }
+            )
         else:
             # Данные для неаутентифицированных пользователей
-            context.update({
-                'total_entries': 0,
-                'monthly_entries': 0,
-                'today_entries': 0,
-                'recent_entries': [],
-                'mood_stats': [],
-                'popular_tags': [],
-            })
+            context.update(
+                {
+                    "total_entries": 0,
+                    "monthly_entries": 0,
+                    "today_entries": 0,
+                    "recent_entries": [],
+                    "mood_stats": [],
+                    "popular_tags": [],
+                }
+            )
 
         return context
 
 
 class ProfilePageView(View):
     def get(self, request):
-        return render(request, 'diary/profile.html')
+        return render(request, "diary/profile.html")
 
 
 class SettingsPageView(View):
     def get(self, request):
-        return render(request, 'diary/settings.html')
+        return render(request, "diary/settings.html")
 
     def post(self, request):
         user = request.user
@@ -97,109 +113,124 @@ class SettingsPageView(View):
         print(f"Files: {request.FILES}")
 
         # Обновляем имя и фамилию
-        user.first_name = request.POST.get('first_name', user.first_name)
-        user.last_name = request.POST.get('last_name', user.last_name)
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
 
         # Обрабатываем загрузку аватара
-        if 'avatar' in request.FILES:
-            avatar = request.FILES['avatar']
+        if "avatar" in request.FILES:
+            avatar = request.FILES["avatar"]
             print(f"Avatar file: {avatar}")
             print(f"Avatar size: {avatar.size}")
             print(f"Avatar name: {avatar.name}")
 
             # Валидация размера файла
             if avatar.size > 2 * 1024 * 1024:
-                messages.error(request, _('Размер файла не должен превышать 2MB'))
+                messages.error(request, _("Размер файла не должен превышать 2MB"))
             else:
                 # Валидация типа файла
-                valid_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+                valid_extensions = [".jpg", ".jpeg", ".png", ".gif"]
                 import os
+
                 ext = os.path.splitext(avatar.name)[1].lower()
 
                 if ext not in valid_extensions:
-                    messages.error(request, _('Поддерживаются только JPEG, PNG и GIF файлы'))
+                    messages.error(
+                        request, _("Поддерживаются только JPEG, PNG и GIF файлы")
+                    )
                 else:
                     # Удаляем старый аватар если он существует
                     if user.avatar:
                         user.avatar.delete(save=False)
                     # Сохраняем новый аватар
                     user.avatar = avatar
-                    messages.success(request, _('Аватар успешно обновлен'))
+                    messages.success(request, _("Аватар успешно обновлен"))
 
         # Обрабатываем смену пароля
-        password = request.POST.get('password', '')
-        password2 = request.POST.get('password2', '')
+        password = request.POST.get("password", "")
+        password2 = request.POST.get("password2", "")
 
         if password:
             if password != password2:
-                messages.error(request, _('Пароли не совпадают'))
+                messages.error(request, _("Пароли не совпадают"))
             else:
                 user.set_password(password)
-                messages.success(request, _('Пароль успешно изменен'))
+                messages.success(request, _("Пароль успешно изменен"))
                 # Обновляем сессию чтобы пользователь не разлогинился
                 update_session_auth_hash(request, user)
 
         try:
             user.save()
-            messages.success(request, _('Настройки успешно сохранены'))
+            messages.success(request, _("Настройки успешно сохранены"))
         except Exception as e:
-            messages.error(request, _('Ошибка при сохранении настроек'))
+            messages.error(request, _(f"Ошибка при сохранении настроек {e}"))
 
-        return redirect('diary:settings')
+        return redirect("diary:settings")
 
 
 class EntryListView(LoginRequiredMixin, ListView):
     model = Entry
-    template_name = 'diary/entry_list.html'
+    template_name = "diary/entry_list.html"
     paginate_by = 10
-    context_object_name = 'entries'
+    context_object_name = "entries"
 
     def get_queryset(self):
         queryset = Entry.objects.filter(owner=self.request.user)
 
         # Фильтрация по тегу
-        tag_slug = self.request.GET.get('tag')
+        tag_slug = self.request.GET.get("tag")
         if tag_slug:
             queryset = queryset.filter(tags__slug=tag_slug)
 
         # Фильтрация по настроению
-        mood_id = self.request.GET.get('mood')
+        mood_id = self.request.GET.get("mood")
         if mood_id:
             queryset = queryset.filter(mood=mood_id)
 
         # Поиск
-        search_query = self.request.GET.get('q')
+        search_query = self.request.GET.get("q")
         if search_query:
             queryset = queryset.filter(
-                Q(title__icontains=search_query) |
-                Q(content__icontains=search_query)
+                Q(title__icontains=search_query) | Q(content__icontains=search_query)
             )
 
         # Сортировка
-        sort_by = self.request.GET.get('sort_by', '-entry_date')  # По умолчанию сортируем по дате записи (новые сначала)
-        if sort_by in ['entry_date', '-entry_date', 'date_created', '-date_created',
-                      'date_updated', '-date_updated', 'title', '-title',
-                      'word_count', '-word_count', 'mood', '-mood']:
+        sort_by = self.request.GET.get(
+            "sort_by", "-entry_date"
+        )  # По умолчанию сортируем по дате записи (новые сначала)
+        if sort_by in [
+            "entry_date",
+            "-entry_date",
+            "date_created",
+            "-date_created",
+            "date_updated",
+            "-date_updated",
+            "title",
+            "-title",
+            "word_count",
+            "-word_count",
+            "mood",
+            "-mood",
+        ]:
             queryset = queryset.order_by(sort_by)
         else:
-            queryset = queryset.order_by('-entry_date')  # Значение по умолчанию
+            queryset = queryset.order_by("-entry_date")  # Значение по умолчанию
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tags'] = Tag.objects.filter(
+        context["tags"] = Tag.objects.filter(
             Q(owner=self.request.user) | Q(owner__isnull=True)
         )
-        context['mood_levels'] = Entry.MOOD_LEVEL
+        context["mood_levels"] = Entry.MOOD_LEVEL
 
         return context
 
 
 class EntryDetailView(LoginRequiredMixin, DetailView):
     model = Entry
-    template_name = 'diary/entry_detail.html'
-    context_object_name = 'entry'
+    template_name = "diary/entry_detail.html"
+    context_object_name = "entry"
 
     def get_queryset(self):
         return Entry.objects.filter(owner=self.request.user)
@@ -208,7 +239,7 @@ class EntryDetailView(LoginRequiredMixin, DetailView):
 class EntryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Entry
     form_class = EntryForm
-    template_name = 'diary/entry_form.html'
+    template_name = "diary/entry_form.html"
     success_message = "Запись успешно создана!"
 
     def form_valid(self, form):
@@ -219,17 +250,17 @@ class EntryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
+        kwargs["user"] = self.request.user
         return kwargs
 
     def get_success_url(self):
-        return reverse_lazy('diary:entry_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy("diary:entry_detail", kwargs={"pk": self.object.pk})
 
 
 class EntryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Entry
     form_class = EntryForm
-    template_name = 'diary/entry_form.html'
+    template_name = "diary/entry_form.html"
     success_message = "Запись успешно обновлена!"
 
     def get_queryset(self):
@@ -237,17 +268,17 @@ class EntryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
+        kwargs["user"] = self.request.user
         return kwargs
 
     def get_success_url(self):
-        return reverse_lazy('diary:entry_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy("diary:entry_detail", kwargs={"pk": self.object.pk})
 
 
 class EntryDeleteView(LoginRequiredMixin, DeleteView):
     model = Entry
-    template_name = 'diary/entry_confirm_delete.html'
-    success_url = reverse_lazy('diary:entry_list')
+    template_name = "diary/entry_confirm_delete.html"
+    success_url = reverse_lazy("diary:entry_list")
     success_message = "Запись успешно удалена!"
 
     def get_queryset(self):
@@ -260,13 +291,13 @@ class EntryDeleteView(LoginRequiredMixin, DeleteView):
 
 class TagListView(LoginRequiredMixin, ListView):
     model = Tag
-    template_name = 'diary/tag_list.html'
-    context_object_name = 'tags'
+    template_name = "diary/tag_list.html"
+    context_object_name = "tags"
 
     def get_queryset(self):
         return Tag.objects.filter(
             Q(owner=self.request.user) | Q(owner__isnull=True)
-        ).order_by('name')
+        ).order_by("name")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -277,9 +308,9 @@ class TagListView(LoginRequiredMixin, ListView):
 class TagCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Tag
     form_class = TagForm
-    template_name = 'diary/tag_form.html'
+    template_name = "diary/tag_form.html"
     success_message = "Тег успешно создан!"
-    success_url = reverse_lazy('diary:tag_list')
+    success_url = reverse_lazy("diary:tag_list")
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -289,9 +320,9 @@ class TagCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 class TagUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Tag
     form_class = TagForm
-    template_name = 'diary/tag_form.html'
+    template_name = "diary/tag_form.html"
     success_message = "Тег успешно обновлен!"
-    success_url = reverse_lazy('diary:tag_list')
+    success_url = reverse_lazy("diary:tag_list")
 
     def get_queryset(self):
         return Tag.objects.filter(owner=self.request.user)
@@ -299,8 +330,8 @@ class TagUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
 class TagDeleteView(LoginRequiredMixin, DeleteView):
     model = Tag
-    template_name = 'diary/tag_confirm_delete.html'
-    success_url = reverse_lazy('diary:tag_list')
+    template_name = "diary/tag_confirm_delete.html"
+    success_url = reverse_lazy("diary:tag_list")
     success_message = "Тег успешно удален!"
 
     def get_queryset(self):
@@ -312,28 +343,26 @@ class TagDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class EntryCalendarView(LoginRequiredMixin, TemplateView):
-    template_name = 'diary/calendar.html'
+    template_name = "diary/calendar.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         # Получаем год и месяц из URL или используем текущие
-        year = int(self.kwargs.get('year', datetime.now().year))
-        month = int(self.kwargs.get('month', datetime.now().month))
+        year = int(self.kwargs.get("year", datetime.now().year))
+        month = int(self.kwargs.get("month", datetime.now().month))
 
         # Получаем параметры фильтрации
-        tag_slug = self.request.GET.get('tag')
-        mood_id = self.request.GET.get('mood')
-        search_query = self.request.GET.get('q')
+        tag_slug = self.request.GET.get("tag")
+        mood_id = self.request.GET.get("mood")
+        search_query = self.request.GET.get("q")
 
         # Создаем календарь
         cal = calendar.monthcalendar(year, month)
 
         # Получаем записи пользователя за указанный месяц
         entries = Entry.objects.filter(
-            owner=self.request.user,
-            entry_date__year=year,
-            entry_date__month=month
+            owner=self.request.user, entry_date__year=year, entry_date__month=month
         )
 
         # Применяем фильтры
@@ -343,8 +372,7 @@ class EntryCalendarView(LoginRequiredMixin, TemplateView):
             entries = entries.filter(mood=mood_id)
         if search_query:
             entries = entries.filter(
-                Q(title__icontains=search_query) |
-                Q(content__icontains=search_query)
+                Q(title__icontains=search_query) | Q(content__icontains=search_query)
             )
 
         # Создаем словарь для хранения записей по дням
@@ -369,10 +397,10 @@ class EntryCalendarView(LoginRequiredMixin, TemplateView):
 
         # Создаем строку запроса для сохранения параметров фильтрации
         query_params = self.request.GET.copy()
-        if 'year' in query_params:
-            del query_params['year']
-        if 'month' in query_params:
-            del query_params['month']
+        if "year" in query_params:
+            del query_params["year"]
+        if "month" in query_params:
+            del query_params["month"]
         query_string = query_params.urlencode()
 
         # Получаем все теги для фильтра
@@ -380,26 +408,28 @@ class EntryCalendarView(LoginRequiredMixin, TemplateView):
             Q(owner=self.request.user) | Q(owner__isnull=True)
         ).distinct()
 
-        context.update({
-            'calendar': cal,
-            'year': year,
-            'month': month,
-            'month_name': calendar.month_name[month],
-            'entries_by_day': dict(entries_by_day),
-            'prev_year': prev_year,
-            'prev_month': prev_month,
-            'next_year': next_year,
-            'next_month': next_month,
-            'query_string': query_string,
-            'tags': tags,
-            'mood_levels': Entry.MOOD_LEVEL,
-        })
+        context.update(
+            {
+                "calendar": cal,
+                "year": year,
+                "month": month,
+                "month_name": calendar.month_name[month],
+                "entries_by_day": dict(entries_by_day),
+                "prev_year": prev_year,
+                "prev_month": prev_month,
+                "next_year": next_year,
+                "next_month": next_month,
+                "query_string": query_string,
+                "tags": tags,
+                "mood_levels": Entry.MOOD_LEVEL,
+            }
+        )
 
         return context
 
 
 class StatisticsView(LoginRequiredMixin, TemplateView):
-    template_name = 'diary/statistics.html'
+    template_name = "diary/statistics.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -410,48 +440,56 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
 
         # Среднее количество слов через агрегацию
         from django.db.models import Avg
-        avg_words = Entry.objects.filter(owner=user).aggregate(
-            avg_words=Avg('word_count')
-        )['avg_words'] or 0
+
+        avg_words = (
+            entries.aggregate(avg_words=Avg("word_count"))[
+                "avg_words"
+            ]
+            or 0
+        )
 
         # Количество уникальных тегов
-        total_tags = Tag.objects.filter(
-            Q(owner=user) | Q(owner__isnull=True),
-            entry__owner=user
-        ).distinct().count()
+        total_tags = (
+            Tag.objects.filter(Q(owner=user) | Q(owner__isnull=True), entry__owner=user)
+            .distinct()
+            .count()
+        )
 
         # Статистика по настроению
-        mood_stats = Entry.objects.filter(owner=user).values(
-            'mood'
-        ).annotate(
-            count=Count('id')
-        ).order_by('mood')
+        mood_stats = (
+            entries
+            .values("mood")
+            .annotate(count=Count("id"))
+            .order_by("mood")
+        )
 
         # Статистика по тегам
-        tag_stats = Tag.objects.filter(
-            Q(owner=user) | Q(owner__isnull=True),
-            entry__owner=user
-        ).annotate(
-            count=Count('entry')
-        ).order_by('-count')
+        tag_stats = (
+            Tag.objects.filter(Q(owner=user) | Q(owner__isnull=True), entry__owner=user)
+            .annotate(count=Count("entry"))
+            .order_by("-count")
+        )
 
         # Статистика по месяцам
         current_year = datetime.now().year
-        monthly_stats = Entry.objects.filter(
-            owner=user,
-            entry_date__year=current_year
-        ).extra(
-            {'month': "EXTRACT(month FROM entry_date)"}
-        ).values('month').annotate(count=Count('id')).order_by('month')
+        monthly_stats = (
+            Entry.objects.filter(owner=user, entry_date__year=current_year)
+            .extra({"month": "EXTRACT(month FROM entry_date)"})
+            .values("month")
+            .annotate(count=Count("id"))
+            .order_by("month")
+        )
 
-        context.update({
-            'avg_words': avg_words,
-            'total_tags': total_tags,
-            'mood_stats': mood_stats,
-            'tag_stats': tag_stats,
-            'monthly_stats': monthly_stats,
-            'current_year': current_year,
-        })
+        context.update(
+            {
+                "avg_words": avg_words,
+                "total_tags": total_tags,
+                "mood_stats": mood_stats,
+                "tag_stats": tag_stats,
+                "monthly_stats": monthly_stats,
+                "current_year": current_year,
+            }
+        )
 
         return context
 
@@ -459,62 +497,86 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
 def faq(request):
     faq_items = [
         {
-            'question': 'Как создать новую запись в дневнике?',
-            'answer': 'Для создания новой записи нажмите кнопку "Новая запись" в верхней части страницы или на боковой панели. Заполните заголовок, содержание, выберите настроение и добавьте теги.'
+            "question": "Как создать новую запись в дневнике?",
+            "answer": 'Для создания новой записи нажмите кнопку "Новая запись" в верхней части страницы или на '
+                      'боковой панели. Заполните заголовок, содержание, выберите настроение и добавьте теги.',
         },
         {
-            'question': 'Как добавить изображения к записи?',
-            'answer': 'В редакторе записи вы можете загружать изображения, используя перетаскивание изображений в редактор. Поддерживаются форматы JPG, PNG и GIF.'
+            "question": "Как добавить изображения к записи?",
+            "answer": "В редакторе записи вы можете загружать изображения, используя перетаскивание изображений в"
+                      " редактор. Поддерживаются форматы JPG, PNG и GIF.",
         },
         {
-            'question': 'Как искать записи по тегам?',
-            'answer': 'На странице всех записей используйте фильтр по тегам в панели поиска. Вы также можете кликнуть на любой тег в записи для фильтрации по нему.'
+            "question": "Как искать записи по тегам?",
+            "answer": "На странице всех записей используйте фильтр по тегам в панели поиска. Вы также можете "
+                      "кликнуть на любой тег в записи для фильтрации по нему.",
         },
         {
-            'question': 'Как работает календарь записей?',
-            'answer': 'Календарь показывает дни, в которые вы делали записи. Кликните на любой день с записью, чтобы перейти к просмотру этой записи.'
+            "question": "Как работает календарь записей?",
+            "answer": "Календарь показывает дни, в которые вы делали записи. Кликните на любой день с записью, "
+                      "чтобы перейти к просмотру этой записи.",
         },
         {
-            'question': 'Как создать и управлять тегами?',
-            'answer': 'Перейдите в раздел "Теги" через боковое меню. Там вы можете создавать новые теги, редактировать существующие и назначать им цвета. Теги помогают организовать ваши записи по темам.'
+            "question": "Как создать и управлять тегами?",
+            "answer": 'Перейдите в раздел "Теги" через боковое меню. Там вы можете создавать новые теги, '
+                      'редактировать существующие и назначать им цвета. Теги помогают организовать ваши '
+                      'записи по темам.',
         },
         {
-            'question': 'Как работает статистика?',
-            'answer': 'В разделе "Статистика" вы можете увидеть обзор вашей активности: количество записей, распределение по настроениям, популярные теги и активность по месяцам. Это помогает отслеживать ваши привычки и настроения.'
+            "question": "Как работает статистика?",
+            "answer": 'В разделе "Статистика" вы можете увидеть обзор вашей активности: количество записей, '
+                      'распределение по настроениям, популярные теги и активность по месяцам. Это помогает '
+                      'отслеживать ваши привычки и настроения.',
         },
         {
-            'question': 'Можно ли редактировать старые записи?',
-            'answer': 'Да, вы можете редактировать любую запись. Просто откройте запись и нажмите кнопку "Редактировать". Все изменения сохранят исходную дату создания, но обновят дату изменения.'
+            "question": "Можно ли редактировать старые записи?",
+            "answer": 'Да, вы можете редактировать любую запись. Просто откройте запись и нажмите кнопку '
+                      '"Редактировать". Все изменения сохранят исходную дату создания, но обновят дату изменения.',
         },
         {
-            'question': 'Как работает поиск по записям?',
-            'answer': 'На странице всех записей есть строка поиска, где вы можете искать по заголовкам и содержимому записей. Вы также можете использовать фильтры по тегам, настроению и сортировке.'
+            "question": "Как работает поиск по записям?",
+            "answer": "На странице всех записей есть строка поиска, где вы можете искать по заголовкам и "
+                      "содержимому записей. Вы также можете использовать фильтры по тегам, настроению и сортировке.",
         },
         {
-            'question': 'Можно ли экспортировать свои записи?',
-            'answer': 'В настоящее время функция экспорта находится в разработке. В будущих обновлениях мы добавим возможность экспорта записей в различные форматы (PDF, TXT, JSON).'
+            "question": "Можно ли экспортировать свои записи?",
+            "answer": "В настоящее время функция экспорта находится в разработке. В будущих обновлениях мы "
+                      "добавим возможность экспорта записей в различные форматы (PDF, TXT, JSON).",
         },
         {
-            'question': 'Как изменить настройки профиля?',
-            'answer': 'Перейдите в раздел "Настройки" через меню пользователя. Там вы можете изменить имя, фамилию, аватар и пароль.'
-        }
+            "question": "Как изменить настройки профиля?",
+            "answer": 'Перейдите в раздел "Настройки" через меню пользователя. Там вы можете изменить имя, '
+                      'фамилию, аватар и пароль.',
+        },
     ]
 
-    return render(request, 'diary/faq.html', {'faq_items': faq_items})
+    return render(request, "diary/faq.html", {"faq_items": faq_items})
 
 
 def contacts(request):
     contact_info = {
-        'email': 'anton_sima@mail.com',
-        'phone': '+7 (123) 456-78-90',
-        'address': 'г. Москва, ул. Примерная, д. 123, офис 456',
-        'social_media': [
-            {'name': 'Telegram', 'url': 'https://t.me/baxcha241', 'icon': 'fab fa-telegram'},
-            {'name': 'VK', 'url': 'https://vk.com/baxcha241', 'icon': 'fab fa-vk'},
-            {'name': 'YouTube', 'url': 'https://youtube.com/@baxcha241', 'icon': 'fab fa-youtube'},
-            {'name': 'Instagram', 'url': 'https://instagram.com/anton_simak', 'icon': 'fab fa-instagram'},
+        "email": "anton_sima@mail.com",
+        "phone": "+7 (123) 456-78-90",
+        "address": "г. Москва, ул. Примерная, д. 123, офис 456",
+        "social_media": [
+            {
+                "name": "Telegram",
+                "url": "https://t.me/baxcha241",
+                "icon": "fab fa-telegram",
+            },
+            {"name": "VK", "url": "https://vk.com/baxcha241", "icon": "fab fa-vk"},
+            {
+                "name": "YouTube",
+                "url": "https://youtube.com/@baxcha241",
+                "icon": "fab fa-youtube",
+            },
+            {
+                "name": "Instagram",
+                "url": "https://instagram.com/anton_simak",
+                "icon": "fab fa-instagram",
+            },
         ],
-        'support_hours': 'Понедельник - Пятница, 9:00 - 18:00 по московскому времени'
+        "support_hours": "Понедельник - Пятница, 9:00 - 18:00 по московскому времени",
     }
 
-    return render(request, 'diary/contacts.html', {'contact_info': contact_info})
+    return render(request, "diary/contacts.html", {"contact_info": contact_info})

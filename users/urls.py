@@ -1,11 +1,13 @@
 from django.urls import path
+
 # from django.views.generic import TemplateView
 # from rest_framework.permissions import AllowAny
 # from rest_framework_simplejwt.views import (TokenObtainPairView,
 #                                             TokenRefreshView)
 # from users.views import CustomTemplateView
 from users.apps import UsersConfig
-from users.views import UserRegistrationView, UserLoginView, UserLogoutView, LogoutConfirmView
+from users.views import (LogoutConfirmView, UserLoginView, UserLogoutView,
+                         UserRegistrationView)
 
 app_name = UsersConfig.name
 
@@ -23,8 +25,8 @@ urlpatterns = [
     # path("login/", TemplateView.as_view(template_name="users/login.html"), name="login_page"),
     # path("profile/", TemplateView.as_view(template_name="users/profile.html"), name="profile_page"),
     # path("logout/", TemplateView.as_view(template_name="users/logout.html"), name="logout_page"),
-    path('register/', UserRegistrationView.as_view(), name='register'),
-    path('login/', UserLoginView.as_view(), name='login'),
-    path('logout/confirm/', LogoutConfirmView.as_view(), name='logout_confirm'),
-    path('logout/', UserLogoutView.as_view(), name='logout'),
+    path("register/", UserRegistrationView.as_view(), name="register"),
+    path("login/", UserLoginView.as_view(), name="login"),
+    path("logout/confirm/", LogoutConfirmView.as_view(), name="logout_confirm"),
+    path("logout/", UserLogoutView.as_view(), name="logout"),
 ]

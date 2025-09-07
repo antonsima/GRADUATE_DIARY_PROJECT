@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -45,9 +46,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "markdownx",
-    'widget_tweaks',
+    "widget_tweaks",
     "colorfield",
-
     "diary",
     "users",
 ]
@@ -82,8 +82,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'diary.context_processors.popular_tags',
-                'diary.context_processors.diary_context',
+                "diary.context_processors.popular_tags",
+                "diary.context_processors.diary_context",
             ],
         },
     },
@@ -142,7 +142,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MEDIA_URL = "/media/"
@@ -153,25 +153,30 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 TEST_EMAIL = os.getenv("TEST_EMAIL")
 TEST_PASSWORD = os.getenv("TEST_PASSWORD")
 
 # Настройки MarkdownX
 MARKDOWNX_MARKDOWN_EXTENSIONS = [
-    'markdown.extensions.extra',
-    'markdown.extensions.codehilite',
+    "markdown.extensions.extra",
+    "markdown.extensions.codehilite",
 ]
 
-MARKDOWNX_MEDIA_PATH = 'markdownx/'  # Путь для загрузки изображений
+MARKDOWNX_MEDIA_PATH = "markdownx/"  # Путь для загрузки изображений
 MARKDOWNX_UPLOAD_MAX_SIZE = 5242880  # 5MB максимальный размер файла
-MARKDOWNX_UPLOAD_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/gif']
-MARKDOWNX_IMAGE_MAX_SIZE = {'size': (1000, 1000), 'quality': 90}
+MARKDOWNX_UPLOAD_CONTENT_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/gif",
+]
+MARKDOWNX_IMAGE_MAX_SIZE = {"size": (1000, 1000), "quality": 90}
 
 # Дополнительные настройки редактора
 MARKDOWNX_EDITOR_RESIZABLE = True  # Редактор с изменяемым размером
@@ -179,12 +184,12 @@ MARKDOWNX_EDITOR_RESIZABLE = True  # Редактор с изменяемым р
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 CORS_ALLOW_HEADERS = [
-    'content-type',
-    'authorization',
-    'x-csrftoken',
+    "content-type",
+    "authorization",
+    "x-csrftoken",
 ]
