@@ -7,20 +7,16 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# RUN pip install celery && pip install poetry && poetry install --no-root
 RUN pip install --no-cache-dir poetry && \
     poetry config virtualenvs.create false
 
 COPY pyproject.toml poetry.lock* ./
 
-# Устанавливаем зависимости
 RUN poetry install --no-interaction --no-ansi --no-root
-
-RUN python --version
 
 COPY . .
 
-RUN mkdir -p /app/media
+RUN mkdir -p /app/media /app/static
 
 EXPOSE 8000
 
