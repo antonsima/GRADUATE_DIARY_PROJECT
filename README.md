@@ -202,14 +202,6 @@ sudo usermod -aG docker $USER
 newgrp docker
 ~~~
 
-Создайте директорию для проекта и перейдите в нее:
-~~~
-mkdir -p ~/GRADUATE_DIARY_PROJECT
-cd ~/GRADUATE_DIARY_PROJECT
-~~~
-
-**!!! НЕ ЗАКРЫВАЙТЕ ТЕРМИНАЛ, ОН ПОНАДОБИТСЯ ЧУТЬ ПОЗЖЕ !!!**
-
 Перейдите в вашем репозитории GitHub в Settings → Secrets and variables → Actions. Добавьте следующие secrets:
 
 | First Header  | Second Header                                                                  |
