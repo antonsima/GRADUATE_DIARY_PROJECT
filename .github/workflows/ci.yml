@@ -134,27 +134,22 @@ jobs:
           ENV_EOF
       
             echo "✅ .env file created"
+          
+            # Останавливаем и удаляем контейнеры
+            sudo docker compose down --remove-orphans
             
-            # Останавливаем и удаляем все контейнеры проекта
-            sudo docker compose down --remove-orphans --volumes --timeout 0
+            # Пересобираем и запускаем контейнеры
+            sudo docker compose up -d --build
             
-            # Удаляем конкретные контейнеры, если они остались
-            sudo docker rm -f graduate_diary_project-db-1 graduate_diary_project-web-1 graduate_diary_project-nginx-1 2>/dev/null || true
+            # Ждем запуска БД
+            sleep 10
             
-            # Запускаем контейнеры
-            sudo docker compose up -d --build --force-recreate
-            sleep 15
-            
-            # Создаем пользователя и базу данных через psql в контейнере
-            # Используем стандартного пользователя postgres для подключения
-            sudo docker compose exec -T db psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';" 2>/dev/null || true
-            sudo docker compose exec -T db psql -U postgres -c "CREATE DATABASE $POSTGRES_DB WITH OWNER $POSTGRES_USER;" 2>/dev/null || true
-            sudo docker compose exec -T db psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;" 2>/dev/null || true
-            
-            # Выполняем миграции и сбор статики
+            # Выполняем миграции и сборку статики
             sudo docker compose exec web python manage.py migrate
             sudo docker compose exec web python manage.py collectstatic --noinput
             
-            # Перезапускаем сервисы
-            sudo docker compose restart
+            # Перезапускаем nginx для применения изменений
+            sudo docker compose restart nginx
+            
+            echo "✅ Deployment completed"
           EOF
