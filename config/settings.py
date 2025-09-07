@@ -180,6 +180,9 @@ MARKDOWNX_IMAGE_MAX_SIZE = {"size": (1000, 1000), "quality": 90}
 # Дополнительные настройки редактора
 MARKDOWNX_EDITOR_RESIZABLE = True  # Редактор с изменяемым размером
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
+FILE_UPLOAD_MAX_MEMORY_SIZE = None
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
