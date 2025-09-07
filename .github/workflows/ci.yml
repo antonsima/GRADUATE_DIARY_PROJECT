@@ -136,7 +136,7 @@ jobs:
             echo "✅ .env file created"
           
             # Останавливаем и удаляем контейнеры
-            sudo docker compose down --remove-orphans
+            sudo docker rm -f $(docker ps -aq)
             
             # Пересобираем и запускаем контейнеры
             sudo docker compose up -d --build
