@@ -49,7 +49,7 @@ python manage.py runserver
 SECRET_KEY=your_secret_key
 DEBUG=True
 
-POSTGRES_NAME=your_db
+POSTGRES_DB=your_db
 POSTGRES_USER=your_user
 POSTGRES_PASSWORD=your_password
 POSTGRES_HOST=localhost
@@ -204,22 +204,22 @@ newgrp docker
 
 Перейдите в вашем репозитории GitHub в Settings → Secrets and variables → Actions. Добавьте следующие secrets:
 
-| First Header  | Second Header                                                                  |
-| ------------- |--------------------------------------------------------------------------------|
-| SSH_KEY  | Приватный SSH ключ для доступа к серверу                                       |
-| SSH_USER  | SSH пользователь (например: ubuntu)                                            |
-| SERVER_IP  | IP адрес вашего сервера                                                        |
-| DOCKER_HUB_ACCESS_TOKEN  | Docker Hub Access Token                                                        |
-| DOCKER_HUB_USERNAME  | Docker Hub username                                                            |
-| SECRET_KEY  | Django SECRET_KEY                                                              |
-| DEBUG  | Django DEBUG (False для production)                                            |
-| TEST_EMAIL  | Email для создания суперпользователя и загрузки в БД тестовых записей и тегов  |
-| TEST_PASSWORD  | Пароль для создания суперпользователя и загрузки в БД тестовых записей и тегов |
-| POSTGRES_NAME  | Имя БД                                                                         |
-| POSTGRES_USER  | Имя пользователя БД                                                            |
-| POSTGRES_PASSWORD  | Пароль пользователя БД                                                         |
-| POSTGRES_HOST  | Хост БД (для работы на сервере должен быть = db)                               |
-| POSTGRES_PORT  | Порт БД (по стандарту должен быть = 5432)                                      |
+| First Header            | Second Header                                                                  |
+|-------------------------|--------------------------------------------------------------------------------|
+| SSH_KEY                 | Приватный SSH ключ для доступа к серверу                                       |
+| SSH_USER                | SSH пользователь (например: ubuntu)                                            |
+| SERVER_IP               | IP адрес вашего сервера                                                        |
+| DOCKER_HUB_ACCESS_TOKEN | Docker Hub Access Token                                                        |
+| DOCKER_HUB_USERNAME     | Docker Hub username                                                            |
+| SECRET_KEY              | Django SECRET_KEY                                                              |
+| DEBUG                   | Django DEBUG (False для production)                                            |
+| TEST_EMAIL              | Email для создания суперпользователя и загрузки в БД тестовых записей и тегов  |
+| TEST_PASSWORD           | Пароль для создания суперпользователя и загрузки в БД тестовых записей и тегов |
+| POSTGRES_DB             | Имя БД                                                                         |
+| POSTGRES_USER           | Имя пользователя БД                                                            |
+| POSTGRES_PASSWORD       | Пароль пользователя БД                                                         |
+| POSTGRES_HOST           | Хост БД (для работы на сервере должен быть = db)                               |
+| POSTGRES_PORT           | Порт БД (по стандарту должен быть = 5432)                                      |
 
 Создайте репозиторий на Docker Hub
 Сгенерируйте Access Token:
