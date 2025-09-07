@@ -119,31 +119,42 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             cd ~/GRADUATE_DIARY_PROJECT
             git pull
-            cat > .env << 'ENV_EOF'
-          SECRET_KEY=${{ secrets.SECRET_KEY }}
-          DEBUG=${{ secrets.DEBUG }}
-          POSTGRES_NAME=${{ secrets.POSTGRES_NAME }}
-          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
-          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
-          TEST_EMAIL=${{ secrets.TEST_EMAIL }}
-          TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
-          ENV_EOF
-            echo "✅ .env file created:"
-            cat .env
-            sudo docker compose -f docker-compose.yml down --remove-orphans
-            sudo docker rm -f graduate_diary_project-db-1 2>/dev/null || true
-            sudo docker compose -f docker-compose.yml --env-file .env up -d --build --force-recreate --remove-orphans
-            sleep 15
-            sudo docker compose ps
-            sudo docker compose logs --tail=20
-            sudo docker compose exec db psql -U postgres -c "SELECT 1 FROM pg_roles WHERE rolname='${{ secrets.POSTGRES_USER }}'" | grep -q 1 || \
-            sudo docker compose exec db psql -U postgres -c "CREATE USER ${{ secrets.POSTGRES_USER }} WITH PASSWORD '${{ secrets.POSTGRES_PASSWORD }}';"
+            
+            # Создаем .env файл с использованием значений из secrets
+            cat > .env << ENV_EOF
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            DEBUG=${{ secrets.DEBUG }}
+            POSTGRES_NAME=${{ secrets.POSTGRES_NAME }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+            POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+            TEST_EMAIL=${{ secrets.TEST_EMAIL }}
+            TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
+            ENV_EOF
+            
+            echo "✅ .env file created"
+            
+            # Загружаем переменные из .env файла
+            set -a
+            source .env
+            set +a
+            
+            sudo docker compose down --remove-orphans
+            sudo docker compose up -d --build
             sleep 10
-            sudo docker compose -f docker-compose.yml --env-file .env exec web python manage.py migrate
-            sudo docker ps -a
-            sudo docker compose logs web
-            sudo docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-            sudo docker compose logs web --tail=10
+            
+            # Создаем пользователя и базу данных, используя переменные из .env
+            sudo docker compose exec db psql -U postgres -c "SELECT 1 FROM pg_roles WHERE rolname='$POSTGRES_USER'" | grep -q 1 || \
+            sudo docker compose exec db psql -U postgres -c "CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';"
+            
+            sudo docker compose exec db psql -U postgres -c "SELECT 1 FROM pg_database WHERE datname='$POSTGRES_NAME'" | grep -q 1 || \
+            sudo docker compose exec db psql -U postgres -c "CREATE DATABASE $POSTGRES_NAME OWNER $POSTGRES_USER;"
+            
+            sudo docker compose exec db psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_NAME TO $POSTGRES_USER;"
+            
+            # Выполняем миграции и сбор статики
+            sudo docker compose exec web python manage.py migrate
+            sudo docker compose exec web python manage.py collectstatic --noinput
+            sudo docker compose restart nginx
           EOF
