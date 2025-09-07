@@ -31,7 +31,7 @@ jobs:
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
         ports:
           - 5432:5432
         options: >-
@@ -80,7 +80,7 @@ jobs:
 
       - name: Run migrate
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_HOST: localhost  # Используем localhost вместо postgres
@@ -90,7 +90,7 @@ jobs:
 
       - name: Run tests
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_HOST: localhost  # Используем localhost вместо postgres
