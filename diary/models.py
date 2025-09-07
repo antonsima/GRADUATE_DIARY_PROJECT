@@ -98,11 +98,6 @@ class Entry(models.Model):
     def __str__(self):
         return f"{self.entry_date}: {self.title}"
 
-    # @property
-    # def word_count(self):
-    #     """Количество слов в записи"""
-    #     return len(self.content.split())
-
     def get_first_image(self):
         # Ищем первое изображение в HTML-содержимом
         if self.content_html:

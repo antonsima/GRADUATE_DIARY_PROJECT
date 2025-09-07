@@ -31,7 +31,7 @@ class DiaryHomeView(TemplateView):
             entries = Entry.objects.filter(owner=user)
 
             # Последние 5 записей
-            recent_entries = entries.order_by('-entry_date')[:5]
+            recent_entries = entries.order_by('-entry_date')[:6]
 
             # Статистика по настроению
             mood_stats_data = entries.values('mood').annotate(count=Count('id')).order_by('mood')

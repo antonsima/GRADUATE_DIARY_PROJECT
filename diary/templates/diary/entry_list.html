@@ -175,7 +175,7 @@
                 <div class="tags-container">
                     {% for tag in entry.tags.all %}
                                 <a href="{% url 'diary:entry_list' %}?tag={{ tag.slug }}" class="badge tag-badge" style="background-color: {{ tag.color }}; color: white;">
-                                    {{ tag.name }} ({{ tag.count }})
+                                    {{ tag.name }}
                                 </a>
                     {% endfor %}
                 </div>

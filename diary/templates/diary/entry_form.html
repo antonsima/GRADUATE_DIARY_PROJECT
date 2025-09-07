@@ -118,6 +118,8 @@
                     </div>
                 </div>
 
+                {% if form.tags.field.queryset.exists %}
+
                 <div class="row mb-4">
                     <div class="col-12">
                         <label for="{{ form.tags.id_for_label }}" class="form-label">Теги</label>
@@ -127,6 +129,8 @@
                         {% endif %}
                     </div>
                 </div>
+
+                {% endif %}
 
                 <!-- Поле содержания -->
                 <div class="mb-3">
