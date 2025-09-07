@@ -69,13 +69,22 @@ jobs:
           poetry config virtualenvs.create true
           poetry install --no-interaction --no-ansi --no-root
 
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in {1..10}; do
+            nc -z localhost 5432 && echo "PostgreSQL is ready" && exit 0
+            echo "Waiting for PostgreSQL... $i"
+            sleep 5
+          done
+          echo "PostgreSQL is not ready after 50 seconds" && exit 1
+
       - name: Run migrate
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_HOST: postgres  # Используем имя сервиса, а не localhost
-          POSTGRES_PORT: 5432      # Порт по умолчанию для PostgreSQL
+          POSTGRES_HOST: localhost  # Используем localhost вместо postgres
+          POSTGRES_PORT: 5432
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: poetry run python manage.py migrate
 
@@ -84,8 +93,8 @@ jobs:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_HOST: postgres  # Используем имя сервиса, а не localhost
-          POSTGRES_PORT: 5432      # Порт по умолчанию для PostgreSQL
+          POSTGRES_HOST: localhost  # Используем localhost вместо postgres
+          POSTGRES_PORT: 5432
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: poetry run python manage.py test
 
@@ -127,16 +136,16 @@ jobs:
             
             # Создаем .env файл с использованием значений из secrets
             cat > .env << ENV_EOF
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
-            DEBUG=${{ secrets.DEBUG }}
-            POSTGRES_NAME=${{ secrets.POSTGRES_NAME }}
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            POSTGRES_HOST=db  # В Docker Compose используется имя сервиса 'db'
-            POSTGRES_PORT=5432
-            TEST_EMAIL=${{ secrets.TEST_EMAIL }}
-            TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
-            ENV_EOF
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          DEBUG=${{ secrets.DEBUG }}
+          POSTGRES_NAME=${{ secrets.POSTGRES_NAME }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST=db
+          POSTGRES_PORT=5432
+          TEST_EMAIL=${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
+          ENV_EOF
             
             echo "✅ .env file created"
             
