@@ -165,7 +165,14 @@ TEST_PASSWORD = os.getenv("TEST_PASSWORD")
 MARKDOWNX_MARKDOWN_EXTENSIONS = [
     "markdown.extensions.extra",
     "markdown.extensions.codehilite",
+    "markdown.extensions.nl2br",
 ]
+
+MARKDOWNX_MARKDOWN_EXTENSION_CONFIGS = {
+    'markdown.extensions.nl2br': {
+        'enabled': True
+    }
+}
 
 MARKDOWNX_MEDIA_PATH = "markdownx/"  # Путь для загрузки изображений
 MARKDOWNX_UPLOAD_MAX_SIZE = 5242880  # 5MB максимальный размер файла

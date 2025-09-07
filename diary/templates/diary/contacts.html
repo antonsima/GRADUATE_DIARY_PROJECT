@@ -134,20 +134,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Обработка формы обратной связи
-        const contactForm = document.querySelector('.contact-form');
-        
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Здесь должна быть логика отправки формы
-            // В демо-версии просто покажем уведомление
-            alert('Сообщение отправлено! Мы свяжемся с вами в ближайшее время.');
-            contactForm.reset();
-        });
-    });
-</script>
 {% endblock %}
