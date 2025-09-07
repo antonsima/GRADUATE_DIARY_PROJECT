@@ -11,7 +11,7 @@ class EntryForm(forms.ModelForm):
         fields = ["title", "content", "entry_date", "mood", "tags"]
         widgets = {
             "entry_date": forms.DateInput(attrs={"type": "date"}),
-            # "content": forms.Textarea(attrs={"rows": 15}),
+            "content": forms.Textarea(attrs={"rows": 15}),
         }
         labels = {
             "title": "Заголовок",
