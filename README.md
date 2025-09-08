@@ -202,6 +202,8 @@ sudo usermod -aG docker $USER
 newgrp docker
 ~~~
 
+**!!! НЕ ЗАКРЫВАЙТЕ ТЕРМИНАЛ, ОН ПОНАДОБИТСЯ ЧУТЬ ПОЗЖЕ !!!**
+
 Перейдите в вашем репозитории GitHub в Settings → Secrets and variables → Actions. Добавьте следующие secrets:
 
 | First Header            | Second Header                                                                  |
@@ -226,11 +228,16 @@ newgrp docker
 - Зайдите в Docker Hub → Account Settings → Security → New Access Token
 - Сохраните токен в GitHub Secrets как DOCKER_HUB_ACCESS_TOKEN
 
-Сделайте fork проекта в свой github и клонируйте проект на сервер и к себе локально на компьютер (сделайте это из терминала открытом на первых шагах, вы должны находиться в папке **GRADUATE_DIARY_PROJECT**:
+Сделайте fork проекта в свой github и клонируйте проект на сервер и к себе локально на компьютер (сделайте это из терминала открытом на первых шагах, вы должны быть подключены к виртуальной машине и находиться в корневом каталоге сервера):
 
 ~~~
 git clone git@github.com:your-username/GRADUATE_DIARY_PROJECT.git -b your_branch
-git pull
+~~~
+
+Перейдите в папку **GRADUATE_DIARY_PROJECT**:
+
+~~~
+cd GRADUATE_DIARY_PROJECT/
 ~~~
 
 Закоммитьте изменения в вашу ветку:
