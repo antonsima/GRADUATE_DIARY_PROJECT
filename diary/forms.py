@@ -26,12 +26,10 @@ class EntryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if user:
-            # Ограничиваем выбор тегов только тегами пользователя и общими
             self.fields["tags"].queryset = Tag.objects.filter(
                 Q(owner=user) | Q(owner__isnull=True)
             )
 
-            # Устанавливаем текущую дату по умолчанию
             self.fields["entry_date"].initial = forms.fields.DateField().to_python(
                 timezone.now().date()
             )

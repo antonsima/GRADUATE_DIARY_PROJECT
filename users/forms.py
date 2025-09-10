@@ -59,11 +59,9 @@ class UserRegistrationForm(UserCreationForm):
     def clean_avatar(self):
         avatar = self.cleaned_data.get("avatar")
         if avatar:
-            # Проверка размера файла (максимум 2MB)
             if avatar.size > 2 * 1024 * 1024:
                 raise ValidationError(_("Размер файла не должен превышать 2MB"))
 
-            # Проверка типа файла
             valid_extensions = [".jpg", ".jpeg", ".png", ".gif"]
             import os
 

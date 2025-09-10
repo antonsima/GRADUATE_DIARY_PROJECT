@@ -82,10 +82,10 @@ class Entry(models.Model):
             MinLengthValidator(3, "Заголовок должен быть не короче 3 символов")
         ],
     )
-    content = MarkdownxField(verbose_name="Содержание")  # Для markdown
+    content = MarkdownxField(verbose_name="Содержание")
     content_html = models.TextField(
         editable=False, verbose_name="HTML содержимое"
-    )  # Для хранения сконвертированного HTML
+    )
     date_created = models.DateTimeField(auto_now_add=True, verbose_name="Создана")
     date_updated = models.DateTimeField(auto_now=True, verbose_name="Обновлена")
     entry_date = models.DateField(
@@ -105,11 +105,8 @@ class Entry(models.Model):
         verbose_name_plural = "Записи"
 
     def save(self, *args, **kwargs):
-        # Конвертация markdown в HTML (можно использовать markdown2 или другую библиотеку)
         self.content_html = markdownify(self.content)
-        # Конвертация markdown в HTML
         self.content_html = markdownify(self.content)
-        # Подсчет слов
         self.word_count = len(self.content.split())
         super().save(*args, **kwargs)
 
@@ -117,9 +114,7 @@ class Entry(models.Model):
         return f"{self.entry_date}: {self.title}"
 
     def get_first_image(self):
-        # Ищем первое изображение в HTML-содержимом
         if self.content_html:
-            # Используем регулярное выражение для поиска тегов img
             img_tags = re.findall(r'<img[^>]+src="([^">]+)"', self.content_html)
             if img_tags:
                 return img_tags[0]

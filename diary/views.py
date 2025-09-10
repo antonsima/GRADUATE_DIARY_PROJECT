@@ -27,25 +27,21 @@ class DiaryHomeView(TemplateView):
         if self.request.user.is_authenticated:
             user = self.request.user
 
-            # Статистика записей
             entries = Entry.objects.filter(owner=user)
 
-            # Последние 5 записей
             recent_entries = entries.order_by("-entry_date")[:6]
 
-            # Статистика по настроению
             mood_stats_data = (
                 entries.values("mood").annotate(count=Count("id")).order_by("mood")
             )
             total_with_mood = sum(item["count"] for item in mood_stats_data)
 
-            # Цвета для разных настроений
             mood_colors = {
-                1: "#ca1d23",  # Очень плохое - красный
-                2: "#e7949e",  # Плохое - розовый
-                3: "#72757a",  # Нейтральное - серый
-                4: "#a8927c",  # Хорошее - бежевый
-                5: "#6aa958",  # Отличное - зеленый
+                1: "#ca1d23",
+                2: "#e7949e",
+                3: "#72757a",
+                4: "#a8927c",
+                5: "#6aa958",
             }
 
             mood_stats = []
@@ -56,7 +52,6 @@ class DiaryHomeView(TemplateView):
                     (count / total_with_mood * 100) if total_with_mood > 0 else 0
                 )
 
-                # Находим текстовое представление настроения
                 mood_display = next(
                     (
                         display
@@ -83,7 +78,6 @@ class DiaryHomeView(TemplateView):
                 }
             )
         else:
-            # Данные для неаутентифицированных пользователей
             context.update(
                 {
                     "total_entries": 0,
@@ -112,22 +106,18 @@ class SettingsPageView(View):
         print(f"User: {user}")
         print(f"Files: {request.FILES}")
 
-        # Обновляем имя и фамилию
         user.first_name = request.POST.get("first_name", user.first_name)
         user.last_name = request.POST.get("last_name", user.last_name)
 
-        # Обрабатываем загрузку аватара
         if "avatar" in request.FILES:
             avatar = request.FILES["avatar"]
             print(f"Avatar file: {avatar}")
             print(f"Avatar size: {avatar.size}")
             print(f"Avatar name: {avatar.name}")
 
-            # Валидация размера файла
             if avatar.size > 2 * 1024 * 1024:
                 messages.error(request, _("Размер файла не должен превышать 2MB"))
             else:
-                # Валидация типа файла
                 valid_extensions = [".jpg", ".jpeg", ".png", ".gif"]
                 import os
 
@@ -138,14 +128,11 @@ class SettingsPageView(View):
                         request, _("Поддерживаются только JPEG, PNG и GIF файлы")
                     )
                 else:
-                    # Удаляем старый аватар если он существует
                     if user.avatar:
                         user.avatar.delete(save=False)
-                    # Сохраняем новый аватар
                     user.avatar = avatar
                     messages.success(request, _("Аватар успешно обновлен"))
 
-        # Обрабатываем смену пароля
         password = request.POST.get("password", "")
         password2 = request.POST.get("password2", "")
 
@@ -155,7 +142,6 @@ class SettingsPageView(View):
             else:
                 user.set_password(password)
                 messages.success(request, _("Пароль успешно изменен"))
-                # Обновляем сессию чтобы пользователь не разлогинился
                 update_session_auth_hash(request, user)
 
         try:
@@ -176,27 +162,23 @@ class EntryListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Entry.objects.filter(owner=self.request.user)
 
-        # Фильтрация по тегу
         tag_slug = self.request.GET.get("tag")
         if tag_slug:
             queryset = queryset.filter(tags__slug=tag_slug)
 
-        # Фильтрация по настроению
         mood_id = self.request.GET.get("mood")
         if mood_id:
             queryset = queryset.filter(mood=mood_id)
 
-        # Поиск
         search_query = self.request.GET.get("q")
         if search_query:
             queryset = queryset.filter(
                 Q(title__icontains=search_query) | Q(content__icontains=search_query)
             )
 
-        # Сортировка
         sort_by = self.request.GET.get(
             "sort_by", "-entry_date"
-        )  # По умолчанию сортируем по дате записи (новые сначала)
+        )
         if sort_by in [
             "entry_date",
             "-entry_date",
@@ -213,7 +195,7 @@ class EntryListView(LoginRequiredMixin, ListView):
         ]:
             queryset = queryset.order_by(sort_by)
         else:
-            queryset = queryset.order_by("-entry_date")  # Значение по умолчанию
+            queryset = queryset.order_by("-entry_date")
 
         return queryset
 
@@ -244,8 +226,6 @@ class EntryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
-        # Markdownx автоматически обрабатывает конвертацию через сигналы
-        # или метод save модели, поэтому нам не нужно делать это вручную
         return super().form_valid(form)
 
     def get_form_kwargs(self):
@@ -348,24 +328,19 @@ class EntryCalendarView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Получаем год и месяц из URL или используем текущие
         year = int(self.kwargs.get("year", datetime.now().year))
         month = int(self.kwargs.get("month", datetime.now().month))
 
-        # Получаем параметры фильтрации
         tag_slug = self.request.GET.get("tag")
         mood_id = self.request.GET.get("mood")
         search_query = self.request.GET.get("q")
 
-        # Создаем календарь
         cal = calendar.monthcalendar(year, month)
 
-        # Получаем записи пользователя за указанный месяц
         entries = Entry.objects.filter(
             owner=self.request.user, entry_date__year=year, entry_date__month=month
         )
 
-        # Применяем фильтры
         if tag_slug:
             entries = entries.filter(tags__slug=tag_slug)
         if mood_id:
@@ -375,12 +350,10 @@ class EntryCalendarView(LoginRequiredMixin, TemplateView):
                 Q(title__icontains=search_query) | Q(content__icontains=search_query)
             )
 
-        # Создаем словарь для хранения записей по дням
         entries_by_day = defaultdict(list)
         for entry in entries:
             entries_by_day[entry.entry_date.day].append(entry)
 
-        # Вычисляем предыдущий и следующий месяц
         if month == 1:
             prev_month = 12
             prev_year = year - 1
@@ -395,7 +368,6 @@ class EntryCalendarView(LoginRequiredMixin, TemplateView):
             next_month = month + 1
             next_year = year
 
-        # Создаем строку запроса для сохранения параметров фильтрации
         query_params = self.request.GET.copy()
         if "year" in query_params:
             del query_params["year"]
@@ -403,7 +375,6 @@ class EntryCalendarView(LoginRequiredMixin, TemplateView):
             del query_params["month"]
         query_string = query_params.urlencode()
 
-        # Получаем все теги для фильтра
         tags = Tag.objects.filter(
             Q(owner=self.request.user) | Q(owner__isnull=True)
         ).distinct()
@@ -435,10 +406,8 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # Общая статистика
         entries = Entry.objects.filter(owner=user)
 
-        # Среднее количество слов через агрегацию
         from django.db.models import Avg
 
         avg_words = (
@@ -448,14 +417,12 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
             or 0
         )
 
-        # Количество уникальных тегов
         total_tags = (
             Tag.objects.filter(Q(owner=user) | Q(owner__isnull=True), entry__owner=user)
             .distinct()
             .count()
         )
 
-        # Статистика по настроению
         mood_stats = (
             entries
             .values("mood")
@@ -463,14 +430,12 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
             .order_by("mood")
         )
 
-        # Статистика по тегам
         tag_stats = (
             Tag.objects.filter(Q(owner=user) | Q(owner__isnull=True), entry__owner=user)
             .annotate(count=Count("entry"))
             .order_by("-count")
         )
 
-        # Статистика по месяцам
         current_year = datetime.now().year
         monthly_stats = (
             Entry.objects.filter(owner=user, entry_date__year=current_year)

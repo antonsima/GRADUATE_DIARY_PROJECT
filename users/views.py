@@ -68,7 +68,6 @@ class UserRegistrationView(SuccessMessageMixin, CreateView):
     success_message = _("Registration successful! You can now log in.")
 
     def form_valid(self, form):
-        # Обработка загрузки аватара
         response = super().form_valid(form)
         return response
 
