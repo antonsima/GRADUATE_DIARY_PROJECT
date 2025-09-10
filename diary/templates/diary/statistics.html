@@ -1,0 +1,373 @@
+{% extends 'diary/base.html' %}
+{% load diary_extras %}
+{% block title %}Статистика - Мой Дневник{% endblock %}
+{% block extra_css %}
+<style>
+    .stats-card {
+        border: 1px solid rgba(139, 120, 102, 0.2);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border-color: #8b7866;
+    }
+
+    .stats-card .card-header {
+        background-color: #f8f3ee;
+        border-bottom: 1px solid rgba(139, 120, 102, 0.2);
+        padding: 1rem 1.5rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #8b7866;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #72757a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        color: #8b7866;
+        margin-bottom: 1rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 1rem 0;
+    }
+
+    .monthly-chart-container {
+        position: relative;
+        height: 200px;
+        margin: 1rem 0;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5 fw-bold text-brown">Статистика записей</h1>
+    <div>
+        <a href="{% url 'diary:entry_calendar' %}" class="btn btn-primary me-2">Календарь</a>
+        <a href="{% url 'diary:entry_create' %}" class="btn btn-success">Новая запись</a>
+    </div>
+</div>
+
+<!-- Карточки с общей статистикой -->
+<div class="stats-grid">
+    <div class="card stats-card">
+        <div class="card-body text-center">
+            <div class="stat-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="stat-number">{{ sidebar_total_entries|default:0 }}</div>
+            <div class="stat-label">Всего записей</div>
+        </div>
+    </div>
+
+    <div class="card stats-card">
+        <div class="card-body text-center">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-number">{{ sidebar_monthly_entries|default:0 }}</div>
+            <div class="stat-label">Записей за этот месяц</div>
+        </div>
+    </div>
+
+    <div class="card stats-card">
+        <div class="card-body text-center">
+            <div class="stat-icon">
+                <i class="fas fa-font"></i>
+            </div>
+            <div class="stat-number">{{ avg_words|floatformat:0 }}</div>
+            <div class="stat-label">Среднее количество слов</div>
+        </div>
+    </div>
+
+    <div class="card stats-card">
+        <div class="card-body text-center">
+            <div class="stat-icon">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="stat-number">{{ total_tags }}</div>
+            <div class="stat-label">Уникальных тегов</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-smile me-2"></i>Распределение по настроению
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="moodChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tag me-2"></i>Популярные теги
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="tagChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 mb-4">
+        <div class="card stats-card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Активность по месяцам ({{ current_year }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="monthly-chart-container">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+<script>
+    // Регистрируем плагин для подписей данных
+    Chart.register(ChartDataLabels);
+
+    // Настройки по умолчанию для Chart.js
+    Chart.defaults.font.family = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+    Chart.defaults.color = '#5a4a42';
+
+    // График распределения по настроению
+    const moodCtx = document.getElementById('moodChart').getContext('2d');
+    const moodChart = new Chart(moodCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for stat in mood_stats %}
+                    '{{ stat.mood|get_mood_display }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for stat in mood_stats %}
+                        {{ stat.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#ca1d23', // Очень плохое - красный
+                    '#e7949e', // Плохое - розовый
+                    '#72757a', // Нейтральное - серый
+                    '#a8927c', // Хорошее - бежевый
+                    '#6aa958'  // Отличное - зеленый
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw} записей`;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: (value) => {
+                        return value > 0 ? value : '';
+                    }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+
+    // График популярных тегов (топ-10)
+    const tagCtx = document.getElementById('tagChart').getContext('2d');
+    const tagChart = new Chart(tagCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for stat in tag_stats|slice:":10" %}
+                    '{{ stat.name }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Количество записей',
+                data: [
+                    {% for stat in tag_stats|slice:":10" %}
+                        {{ stat.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    {% for stat in tag_stats|slice:":10" %}
+                        '{{ stat.color }}',
+                    {% endfor %}
+                ],
+                borderWidth: 0,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // График активности по месяцам
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+
+    // Создаем массив данных для всех месяцев
+    const monthlyData = Array(12).fill(0);
+    {% for stat in monthly_stats %}
+        monthlyData[{{ stat.month|add:"-1" }}] = {{ stat.count }};
+    {% endfor %}
+
+    const monthNames = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: monthNames,
+            datasets: [{
+                label: 'Количество записей',
+                data: monthlyData,
+                fill: true,
+                backgroundColor: 'rgba(139, 120, 102, 0.1)',
+                borderColor: '#8b7866',
+                tension: 0.3,
+                pointBackgroundColor: '#8b7866',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Записей: ${context.raw}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

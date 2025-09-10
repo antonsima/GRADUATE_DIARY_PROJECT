@@ -1,0 +1,245 @@
+{% extends 'diary/base.html' %}
+{% block title %}Все записи - Мой Дневник{% endblock %}
+{% block extra_css %}
+<style>
+    /* Стили для ограничения ширины и улучшения внешнего вида */
+    .entry-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-text-container {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .card-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        line-height: 1.4;
+        max-height: 4.2em;
+    }
+
+    .entry-image-preview {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+        border-top-left-radius: calc(0.25rem - 1px);
+        border-top-right-radius: calc(0.25rem - 1px);
+    }
+
+    /* Стили для тегов с ограничением ширины */
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .tag-badge {
+        margin: 0;
+        color: white;
+        font-size: 0.75em;
+        padding: 0.3em 0.6em;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    /* Улучшенная сетка для карточек */
+    .entries-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .entries-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Обеспечиваем одинаковую высоту для всех карточек в строке */
+    .card {
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Стили для заголовка с переносом текста */
+    .card-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        line-height: 1.3;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Все записи</h1>
+    <a href="{% url 'diary:entry_create' %}" class="btn btn-success">Новая запись</a>
+</div>
+
+<!-- Фильтры и поиск -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="q" class="form-label">Поиск</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ request.GET.q }}" placeholder="Поиск по заголовку или содержанию...">
+            </div>
+            <div class="col-md-2">
+                <label for="tag" class="form-label">Тег</label>
+                <select class="form-select" id="tag" name="tag">
+                    <option value="">Все теги</option>
+                    {% for tag in tags %}
+                        <option value="{{ tag.slug }}" {% if request.GET.tag == tag.slug %}selected{% endif %}>
+                            {{ tag.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="mood" class="form-label">Настроение</label>
+                <select class="form-select" id="mood" name="mood">
+                    <option value="">Все настроения</option>
+                    {% for mood_value, mood_label in mood_levels %}
+                        <option value="{{ mood_value }}" {% if request.GET.mood == mood_value|stringformat:"s" %}selected{% endif %}>
+                            {{ mood_label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="sort_by" class="form-label">Сортировка</label>
+                <select class="form-select" id="sort_by" name="sort_by">
+                    <option value="-date_updated" {% if request.GET.sort_by == "-date_updated" %}selected{% endif %}>Дате (новые)</option>
+                    <option value="date_updated" {% if request.GET.sort_by == "date_updated" %}selected{% endif %}>Дате (старые)</option>
+                    <option value="title" {% if request.GET.sort_by == "title" %}selected{% endif %}>Названию (А-Я)</option>
+                    <option value="-title" {% if request.GET.sort_by == "-title" %}selected{% endif %}>Названию (Я-А)</option>
+                    <option value="word_count" {% if request.GET.sort_by == "word_count" %}selected{% endif %}>Словам (по возр.)</option>
+                    <option value="-word_count" {% if request.GET.sort_by == "-word_count" %}selected{% endif %}>Словам (по убыв.)</option>
+                    <option value="mood" {% if request.GET.sort_by == "mood" %}selected{% endif %}>Настроению (по возр.)</option>
+                    <option value="-mood" {% if request.GET.sort_by == "-mood" %}selected{% endif %}>Настроению (по убыв.)</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 me-2">Применить</button>
+                <a href="{% url 'diary:entry_list' %}" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список записей -->
+{% if entries %}
+<div class="entries-grid">
+    {% for entry in entries %}
+        <div class="card entry-card">
+            <!-- Изображение превью -->
+            {% with entry.get_first_image as first_image %}
+                {% if first_image %}
+                    <img src="{{ first_image }}" class="entry-image-preview" alt="Превью записи">
+                {% endif %}
+            {% endwith %}
+
+            <div class="card-body">
+                <h5 class="card-title">{{ entry.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">
+                    {{ entry.entry_date }} |
+                    {% if entry.mood %}
+                        Настроение: {{ entry.get_mood_display }}
+                    {% endif %}
+                </h6>
+
+                <div class="card-text-container mb-2">
+                    <p class="card-text">{{ entry.content_html|striptags|truncatewords:30 }}</p>
+                </div>
+
+                <div class="tags-container">
+                    {% for tag in entry.tags.all %}
+                                <a href="{% url 'diary:entry_list' %}?tag={{ tag.slug }}" class="badge tag-badge" style="background-color: {{ tag.color }}; color: white;">
+                                    {{ tag.name }}
+                                </a>
+                    {% endfor %}
+                </div>
+
+                <div class="text-muted small mb-2">
+                    Слов: {{ entry.word_count }} |
+                    Обновлено: {{ entry.date_updated|date:"d.m.Y H:i" }}
+                </div>
+
+                <div class="mt-auto">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'diary:entry_detail' entry.pk %}" class="btn btn-sm btn-outline-primary">
+                            Подробнее
+                        </a>
+                        <div>
+                            <a href="{% url 'diary:entry_update' entry.pk %}" class="btn btn-sm btn-outline-secondary">
+                                Редактировать
+                            </a>
+                            <a href="{% url 'diary:entry_delete' entry.pk %}" class="btn btn-sm btn-outline-danger">
+                                Удалить
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+    <!-- Пагинация -->
+    {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Назад</a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Вперед</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="alert alert-info">
+        {% if request.GET.q or request.GET.tag or request.GET.mood %}
+            По вашему запросу ничего не найдено. <a href="{% url 'diary:entry_list' %}" class="alert-link">Показать все записи</a>
+        {% else %}
+            У вас пока нет записей. <a href="{% url 'diary:entry_create' %}" class="alert-link">Создайте первую!</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

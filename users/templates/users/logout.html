@@ -1,0 +1,49 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="section">
+    <h2>Выход из системы</h2>
+    <p>Вы уверены, что хотите выйти?</p>
+    <button onclick="performLogout()" style="background-color: #f44336;">Выйти</button>
+    <a href="/users/profile/" style="margin-left: 10px;">Отмена</a>
+    <div id="logout-response" class="response"></div>
+</div>
+
+<script>
+    async function performLogout() {
+        const button = document.querySelector('button');
+        const responseDiv = document.getElementById('logout-response');
+
+        button.disabled = true;
+        button.textContent = 'Выход...';
+        responseDiv.innerHTML = '';
+
+        try {
+            const response = await apiRequest('/users/api/logout/', 'POST', {}, true);
+
+            if (response.ok) {
+                responseDiv.innerHTML = `<span class="success">${response.data.detail}</span>`;
+            } else {
+                responseDiv.innerHTML = `<span class="error">Ошибка ${response.status}:</span>\n${JSON.stringify(response.data, null, 2)}`;
+            }
+        } catch (error) {
+            responseDiv.innerHTML = `<span class="error">Ошибка при выходе:</span> ${error.message}`;
+        } finally {
+            // Всегда очищаем токены
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+
+            // Обновляем навигацию если функция существует
+            if (typeof updateNavigation === 'function') {
+                updateNavigation();
+            }
+
+            // Перенаправляем на страницу входа
+            setTimeout(() => {
+                window.location.href = '/users/login/';
+            }, 1000);
+        }
+    }
+</script>
+{% endblock %}

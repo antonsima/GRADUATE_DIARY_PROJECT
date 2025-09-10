@@ -1,0 +1,107 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="section">
+    <h2>Профиль пользователя</h2>
+
+    <div id="profile-info">
+        <p>Загрузка данных профиля...</p>
+    </div>
+
+    <button onclick="loadProfile()" style="margin-top: 10px;">Проверить профиль</button>
+    <div id="profile-response" class="response"></div>
+</div>
+
+<div class="section">
+    <h2>Обновление профиля</h2>
+    <form id="update-profile-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="update-first_name">Имя:</label>
+            <input type="text" id="update-first_name" name="first_name">
+        </div>
+        <div class="form-group">
+            <label for="update-last_name">Фамилия:</label>
+            <input type="text" id="update-last_name" name="last_name">
+        </div>
+        <div class="form-group">
+            <label for="update-password">Новый пароль (оставьте пустым, если не меняется):</label>
+            <input type="password" id="update-password" name="password">
+        </div>
+        <button type="submit">Обновить профиль</button>
+    </form>
+    <div id="update-response" class="response"></div>
+</div>
+
+<script src="{% static 'js/api_for_users.js' %}"></script>
+<script>
+    // Проверяем авторизацию при загрузке страницы
+    if (!isAuthenticated()) {
+        window.location.href = '/users/login/';
+    }
+
+    // Загружаем данные профиля
+    async function loadProfile() {
+        const responseDiv = document.getElementById('profile-response');
+        const profileDiv = document.getElementById('profile-info');
+
+        responseDiv.innerHTML = '';
+        profileDiv.innerHTML = '<p>Загрузка...</p>';
+
+        const response = await apiRequest('/users/api/profile/', 'GET', null, true);
+
+        if (response.ok) {
+            profileDiv.innerHTML = `
+                <p><strong>Email:</strong> ${response.data.email}</p>
+                <p><strong>Имя:</strong> ${response.data.first_name || 'Не указано'}</p>
+                <p><strong>Фамилия:</strong> ${response.data.last_name || 'Не указано'}</p>
+                <p><strong>ID:</strong> ${response.data.id}</p>
+            `;
+
+            // Заполняем форму обновления текущими значениями
+            document.getElementById('update-first_name').value = response.data.first_name || '';
+            document.getElementById('update-last_name').value = response.data.last_name || '';
+
+        } else {
+            profileDiv.innerHTML = `<span class="error">Ошибка загрузки профиля</span>`;
+            responseDiv.innerHTML = `<span class="error">Ошибка ${response.status}:</span> ${JSON.stringify(response.data, null, 2)}`;
+
+            // Если токен истек, делаем logout
+            if (response.status === 401) {
+                logout();
+            }
+        }
+    }
+
+    // Обработчик формы обновления профиля
+    document.getElementById('update-profile-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const responseDiv = document.getElementById('update-response');
+        responseDiv.innerHTML = '';
+
+        const formData = {
+            first_name: document.getElementById('update-first_name').value,
+            last_name: document.getElementById('update-last_name').value,
+            csrfmiddlewaretoken: getCookie('csrftoken')
+        };
+
+        const password = document.getElementById('update-password').value;
+        if (password) {
+            formData.password = password;
+        }
+
+        // Используем PATCH вместо PUT для частичного обновления
+        const response = await apiRequest('/users/api/profile/', 'PATCH', formData, true);
+
+        if (response.ok) {
+            responseDiv.innerHTML = `<span class="success">Профиль успешно обновлен!</span>`;
+            loadProfile();
+            document.getElementById('update-password').value = '';
+        } else {
+            responseDiv.innerHTML = `<span class="error">Ошибка ${response.status}:</span>\n${JSON.stringify(response.data, null, 2)}`;
+        }
+    });
+</script>
+{% endblock %}

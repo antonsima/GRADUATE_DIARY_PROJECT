@@ -1,0 +1,72 @@
+{% extends 'diary/base.html' %}
+{% block title %}Мой профиль - Мой Дневник{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-4">Мой профиль</h3>
+
+                    {% if not user.is_authenticated %}
+                    <!-- Сообщение о необходимости авторизации -->
+                    <div class="alert alert-warning">
+                        <h5>Необходима авторизация</h5>
+                        <p>Для просмотра профиля необходимо войти в систему</p>
+                        <a href="{% url 'users:login' %}?next={% url 'diary:profile' %}"
+                           class="btn btn-primary">Войти</a>
+                    </div>
+
+                    {% else %}
+                    <!-- Информация о пользователе -->
+                    <div class="mb-4">
+                        {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}?{% now 'U' %}" alt="Текущий аватар"
+                             class="rounded-circle" width="120" height="120"
+                             style="object-fit: cover; border: 3px solid #dee2e6;"
+                             id="current-avatar">
+                        {% else %}
+                        <i class="bi bi-person-circle me-1"></i>
+                        {% endif %}
+
+                        <h4>{{ user.first_name }} {{ user.last_name }}</h4>
+                        <p class="text-muted">{{ user.email }}</p>
+                        <small class="text-muted">ID: {{ user.id }}</small>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Всего записей</h5>
+                                    <h3 class="text-primary">{{ total_entries|default:0 }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">За этот месяц</h5>
+                                    <h3 class="text-success">{{ monthly_entries|default:0 }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки действий -->
+                    <div class="d-grid gap-2 col-md-8 mx-auto">
+                        <a href="{% url 'diary:settings' %}" class="btn btn-outline-primary">
+                            Редактировать профиль
+                        </a>
+                        <a href="{% url 'users:logout_confirm' %}" class="btn btn-outline-secondary">
+                            Выйти из системы
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

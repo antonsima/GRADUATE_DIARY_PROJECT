@@ -1,0 +1,231 @@
+{% extends 'diary/base.html' %}
+{% load diary_extras %}
+{% block title %}Календарь записей - Мой Дневник{% endblock %}
+{% block extra_css %}
+<style>
+    .calendar {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .calendar-header {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        background-color: #8b7866;
+        color: white;
+        font-weight: bold;
+    }
+
+    .calendar-day-header {
+        padding: 12px;
+        text-align: center;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .calendar-day-header:last-child {
+        border-right: none;
+    }
+
+    .calendar-body {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        background-color: white;
+    }
+
+    .calendar-day {
+        min-height: 120px;
+        border-right: 1px solid #e9ecef;
+        border-bottom: 1px solid #e9ecef;
+        padding: 8px;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    .calendar-day:nth-child(7n) {
+        border-right: none;
+    }
+
+    .calendar-day.empty {
+        background-color: #f8f9fa;
+    }
+
+    .calendar-day.has-entry {
+        background-color: #f8f3ee;
+        cursor: pointer;
+    }
+
+    .calendar-day.has-entry:hover {
+        background-color: #e8dcd1;
+        transform: scale(1.02);
+        z-index: 1;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .day-number {
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #5a4a42;
+    }
+
+    .entry-list {
+        max-height: 80px;
+        overflow-y: auto;
+    }
+
+    .entry-item {
+        display: block;
+        padding: 4px 6px;
+        margin-bottom: 4px;
+        background-color: rgba(139, 120, 102, 0.1);
+        border-radius: 4px;
+        font-size: 0.85rem;
+        color: #5a4a42;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .entry-item:hover {
+        background-color: #8b7866;
+        color: white;
+    }
+
+    .entry-count {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: #8b7866;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+
+    .calendar-nav {
+        background-color: #f8f3ee;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+        /* Обеспечиваем одинаковую высоту для всех карточек в строке */
+    .card {
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5 fw-bold text-brown">Календарь записей</h1>
+    <div>
+        <a href="{% url 'diary:statistics' %}" class="btn btn-info">Статистика</a>
+        <a href="{% url 'diary:entry_create' %}" class="btn btn-success me-2">Новая запись</a>
+    </div>
+</div>
+
+<!-- Фильтры и поиск -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <!-- Скрытые поля для сохранения параметров месяца и года -->
+            <input type="hidden" name="year" value="{{ year }}">
+            <input type="hidden" name="month" value="{{ month }}">
+
+            <div class="col-md-4">
+                <label for="q" class="form-label">Поиск</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ request.GET.q }}" placeholder="Поиск по заголовку или содержанию...">
+            </div>
+            <div class="col-md-3">
+                <label for="tag" class="form-label">Тег</label>
+                <select class="form-select" id="tag" name="tag">
+                    <option value="">Все теги</option>
+                    {% for tag in tags %}
+                        <option value="{{ tag.slug }}" {% if request.GET.tag == tag.slug %}selected{% endif %}>
+                            {{ tag.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="mood" class="form-label">Настроение</label>
+                <select class="form-select" id="mood" name="mood">
+                    <option value="">Все настроения</option>
+                    {% for mood_value, mood_label in mood_levels %}
+                        <option value="{{ mood_value }}" {% if request.GET.mood == mood_value|stringformat:"s" %}selected{% endif %}>
+                            {{ mood_label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Применить</button>
+                <a href="{% url 'diary:entry_calendar' %}" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4 calendar-nav">
+    <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{% url 'diary:entry_calendar_month' prev_year prev_month %}?{{ query_string }}" class="btn btn-outline-primary">
+                <i class="fas fa-chevron-left me-2"></i> {{ prev_month|stringformat:"02d" }}.{{ prev_year }}
+            </a>
+            <h3 class="mb-0 text-brown fw-bold">{{ month_name }} {{ year }}</h3>
+            <a href="{% url 'diary:entry_calendar_month' next_year next_month %}?{{ query_string }}" class="btn btn-outline-primary">
+                {{ next_month|stringformat:"02d" }}.{{ next_year }} <i class="fas fa-chevron-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="calendar">
+    <div class="calendar-header">
+        <div class="calendar-day-header">Пн</div>
+        <div class="calendar-day-header">Вт</div>
+        <div class="calendar-day-header">Ср</div>
+        <div class="calendar-day-header">Чт</div>
+        <div class="calendar-day-header">Пт</div>
+        <div class="calendar-day-header">Сб</div>
+        <div class="calendar-day-header">Вс</div>
+    </div>
+    <div class="calendar-body">
+        {% for week in calendar %}
+            {% for day in week %}
+                {% if day != 0 %}
+                    <div class="calendar-day {% if day in entries_by_day %}has-entry{% endif %}">
+                        <div class="day-number">{{ day }}</div>
+                        {% if day in entries_by_day %}
+                            <span class="entry-count">{{ entries_by_day|get_item:day|length }}</span>
+                            <div class="entry-list">
+                                {% for entry in entries_by_day|get_item:day %}
+                                    <a href="{% url 'diary:entry_detail' entry.pk %}" class="entry-item" title="{{ entry.title }}">
+                                        {{ entry.title|truncatechars:20 }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="calendar-day empty"></div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% load static %}
+<style>
+    .custom-sidebar {
+        background-color: #f8f3ee !important;
+        border: 1px solid #d6c8bb !important;
+        border-radius: 8px !important;
+        padding: 1.5rem;
+        width: 280px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        height: fit-content;
+        position: sticky;
+        top: 20px;
+    }
+
+    .custom-sidebar h5 {
+        color: #5a4a42 !important;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #d6c8bb;
+        padding-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .sidebar-section-title {
+        color: #5a4a42 !important;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-divider {
+        border-color: #d6c8bb;
+        margin: 1.5rem 0;
+    }
+
+    .sidebar-nav .nav-link {
+        color: #5a4a42 !important;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        margin-bottom: 0.3rem;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .sidebar-nav .nav-link:hover,
+    .sidebar-nav .nav-link.active {
+        background-color: #d6c8bb !important;
+        color: #3a2e28 !important;
+    }
+
+    .sidebar-nav .nav-link i {
+        width: 16px;
+        text-align: center;
+    }
+
+    .sidebar-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .tag-badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.6em;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tag-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .user-info {
+        padding: 0.8rem;
+        background-color: rgba(214, 200, 187, 0.3);
+        border-radius: 8px;
+    }
+
+    @media (max-width: 992px) {
+        .custom-sidebar {
+            width: 100%;
+            position: relative;
+            top: 0;
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+<aside class="custom-sidebar">
+    <!-- Заголовок и краткая статистика -->
+    <div class="text-center mb-4">
+        <h5 class="mb-3">Мой Дневник</h5>
+        {% if user.is_authenticated %}
+            <div class="user-info mb-3">
+                <div class="d-flex justify-content-center align-items-center mb-2">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Аватар" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            <span class="text-white">{{ user.first_name|first|default:user.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <strong>{{ user.first_name|default:user.username }}</strong>
+                    </div>
+                </div>
+                <small class="text-muted">Записей: {{ sidebar_total_entries|default:0 }}</small>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Основное меню -->
+    <h6 class="sidebar-section-title">Навигация</h6>
+    <ul class="nav flex-column sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'diary:index' %}">
+                <i class="fas fa-home me-2"></i>Главная
+            </a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'entry_list' %}active{% endif %}" href="{% url 'diary:entry_list' %}">
+                <i class="fas fa-book me-2"></i>Все записи
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'entry_calendar' %}active{% endif %}" href="{% url 'diary:entry_calendar' %}">
+                <i class="fas fa-calendar me-2"></i>Календарь
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'statistics' %}active{% endif %}" href="{% url 'diary:statistics' %}">
+                <i class="fas fa-chart-pie me-2"></i>Статистика
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'tag_list' %}active{% endif %}" href="{% url 'diary:tag_list' %}">
+                <i class="fas fa-tags me-2"></i>Теги
+            </a>
+        </li>
+    </ul>
+
+    <hr class="sidebar-divider">
+
+    <!-- Быстрые фильтры -->
+    <h6 class="sidebar-section-title">Быстрые фильтры</h6>
+    <ul class="nav flex-column sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'diary:entry_list' %}?sort_by=-date_updated">
+                <i class="fas fa-clock me-2"></i>Последние записи
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'diary:entry_list' %}?mood=5">
+                <i class="fas fa-smile me-2" style="color: #6aa958;"></i>С отличным настроением
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'diary:entry_list' %}?mood=1">
+                <i class="fas fa-frown me-2" style="color: #ca1d23;"></i>С плохим настроением
+            </a>
+        </li>
+    </ul>
+
+    <hr class="sidebar-divider">
+
+<!-- Популярные теги -->
+<h6 class="sidebar-section-title">Популярные теги</h6>
+<div class="sidebar-tags">
+    {% if sidebar_popular_tags %}
+        {% for tag in sidebar_popular_tags %}
+            <a href="{% url 'diary:entry_list' %}?tag={{ tag.slug }}" class="tag-badge" style="background-color: {{ tag.color }}; color: white;">
+                {{ tag.name }} ({{ tag.count }})
+            </a>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted small">Тегов пока нет</p>
+    {% endif %}
+</div>
+    {% endif %}
+
+    <hr class="sidebar-divider">
+
+    <!-- Дополнительные ссылки -->
+    {% if user.is_authenticated %}
+    <h6 class="sidebar-section-title">Дополнительно</h6>
+    <ul class="nav flex-column sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'faq' %}active{% endif %}" href="{% url 'diary:faq' %}">
+                <i class="fas fa-question-circle me-2"></i>FAQ
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}" href="{% url 'diary:contacts' %}">
+                <i class="fas fa-envelope me-2"></i>Контакты
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'diary:settings' %}">
+                <i class="fas fa-cog me-2"></i>Настройки
+            </a>
+        </li>
+    </ul>
+
+    <!-- Кнопка создания записи -->
+    {% if user.is_authenticated %}
+        <div class="mt-4 text-center">
+            <a href="{% url 'diary:entry_create' %}" class="btn btn-success w-100">
+                <i class="fas fa-plus me-2"></i>Новая запись
+            </a>
+        </div>
+    {% endif %}
+    {% endif %}
+</aside>

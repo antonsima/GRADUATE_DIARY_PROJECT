@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Навигация</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .custom-navbar {
+            background-color: #e4d6c9 !important;
+            border: 1px solid #ffffff !important;
+            border-radius: 8px !important;
+            margin: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            padding: 0.5rem 1rem;
+        }
+
+        .custom-navbar .navbar-brand {
+            color: #5a4a42 !important;
+            font-weight: 600;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            height: 50px;
+        }
+
+        .custom-navbar .nav-link {
+            color: #5a4a42 !important;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-navbar .nav-link:hover,
+        .custom-navbar .nav-link.active {
+            background-color: #d6c8bb !important;
+            color: #3a2e28 !important;
+        }
+
+        .custom-navbar .navbar-toggler {
+            border: 1px solid #d6c8bb;
+        }
+
+        .custom-navbar .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(90, 74, 66, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .auth-btn {
+            color: #5a4a42 !important;
+            background-color: transparent;
+            border: 1px solid #d6c8bb;
+            border-radius: 4px;
+            padding: 0.375rem 0.75rem;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            background-color: #d6c8bb !important;
+            color: #3a2e28 !important;
+        }
+
+        .dropdown-menu {
+            background-color: #e4d6c9;
+            border: 1px solid #d6c8bb;
+        }
+
+        .dropdown-item {
+            color: #5a4a42;
+        }
+
+        .dropdown-item:hover {
+            background-color: #d6c8bb;
+            color: #3a2e28;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light custom-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <img src="/static/images/logo.png" alt="Logo" width="50" height="50"
+                 class="d-inline-block align-text-top me-2">
+            Мой Дневник
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+{% load diary_extras %}
+
+<ul class="navbar-nav me-auto">
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'index' %}" href="{% url 'diary:index' %}">Главная</a>
+    </li>
+    {% if user.is_authenticated %}
+    <li class="nav-item">
+        <a class="nav-link {% is_active_in 'entry_list' 'entry_create' 'entry_detail' 'entry_update' 'entry_delete' %}" href="{% url 'diary:entry_list' %}">Записи</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active_in 'tag_list' 'tag_create' 'tag_update' 'tag_delete' %}" href="{% url 'diary:tag_list' %}">Теги</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active_in 'entry_calendar' 'entry_calendar_month' %}" href="{% url 'diary:entry_calendar' %}">Календарь</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'statistics' %}" href="{% url 'diary:statistics' %}">Статистика</a>
+    </li>
+    {% endif %}
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'faq' %}" href="{% url 'diary:faq' %}">FAQ</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% is_active 'contacts' %}" href="{% url 'diary:contacts' %}">Контакты</a>
+    </li>
+    </ul>
+
+            {% if user.is_authenticated %}
+            <!-- Блок для авторизованных пользователей -->
+            <div>
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle auth-btn" type="button" id="profileDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if user.is_authenticated and user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Аватар" class="rounded-circle me-1" width="24"
+                             height="24" style="object-fit: cover;">
+                        Профиль
+                        {% else %}
+                        <i class="bi bi-person-circle me-1"></i> Профиль
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <li><a class="dropdown-item" href="{% url 'diary:profile_page' %}">
+                            <i class="bi bi-person me-2"></i> Мой профиль
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'diary:settings' %}">
+                            <i class="bi bi-gear me-2"></i> Настройки
+                        </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'users:logout_confirm' %}">
+                            <i class="bi bi-box-arrow-right me-2"></i> Выйти
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Блок для неавторизованных пользователей -->
+            <div>
+                <a href="{% url 'users:register' %}" class="auth-btn text-decoration-none me-2">Регистрация</a>
+                <a href="{% url 'users:login' %}" class="auth-btn text-decoration-none">Вход</a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</nav>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
