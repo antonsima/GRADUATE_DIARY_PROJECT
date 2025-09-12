@@ -118,7 +118,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             cd ~/GRADUATE_DIARY_PROJECT
-            git pull
+            git fetch origin
+            git checkout ${GITHUB_REF#refs/heads/}
+            git reset --hard origin/${GITHUB_REF#refs/heads/}
       
             # Создаем .env файл
             cat > .env << ENV_EOF
