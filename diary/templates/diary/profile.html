@@ -45,7 +45,7 @@
                             <div class="card bg-light">
                                 <div class="card-body">
                                     <h5 class="card-title">Всего записей</h5>
-                                    <h3 class="text-primary">{{ total_entries|default:0 }}</h3>
+                                    <h3 class="text-primary">{{ sidebar_total_entries|default:0 }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -53,7 +53,7 @@
                             <div class="card bg-light">
                                 <div class="card-body">
                                     <h5 class="card-title">За этот месяц</h5>
-                                    <h3 class="text-success">{{ monthly_entries|default:0 }}</h3>
+                                    <h3 class="text-success">{{ sidebar_monthly_entries|default:0 }}</h3>
                                 </div>
                             </div>
                         </div>
