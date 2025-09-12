@@ -88,6 +88,11 @@
                             <input type="number" class="form-control" id="chat_id" name="chat_id"
                                    value="{{ user.chat_id }}"
                                    placeholder="Введите ваш ID чата в Telegram для получения уведомлений">
+                            {% if user.chat_id %}
+                            <div class="form-text">Текущий ID чата: <strong>{{ user.chat_id }}</strong></div>
+                            {% else %}
+                            <div class="form-text">ID чата не указан. Уведомления не будут приходить.</div>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Теги для уведомлений</label>

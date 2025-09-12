@@ -31,6 +31,11 @@
 
                         <h4>{{ user.first_name }} {{ user.last_name }}</h4>
                         <p class="text-muted">{{ user.email }}</p>
+                        {% if user.chat_id %}
+                        <p class="text-muted">Telegram Chat ID: <strong>{{ user.chat_id }}</strong></p>
+                        {% else %}
+                        <p class="text-muted text-warning">Telegram Chat ID: не указан</p>
+                        {% endif %}
                         <small class="text-muted">ID: {{ user.id }}</small>
                     </div>
 
