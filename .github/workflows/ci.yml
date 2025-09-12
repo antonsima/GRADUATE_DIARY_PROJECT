@@ -117,10 +117,11 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          BRANCH=${GITHUB_REF#refs/heads/}
             cd ~/GRADUATE_DIARY_PROJECT
             git fetch origin
-            git checkout ${GITHUB_REF#refs/heads/}
-            git reset --hard origin/${GITHUB_REF#refs/heads/}
+            git checkout $BRANCH
+            git reset --hard origin/$BRANCH
       
             # Создаем .env файл
             cat > .env << ENV_EOF
