@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "colorfield",
     "django_celery_beat",
-    "drf_yasg",
     "diary",
     "users",
 ]
