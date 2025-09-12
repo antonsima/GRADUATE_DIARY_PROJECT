@@ -57,6 +57,8 @@ POSTGRES_PORT=5432
 
 TEST_EMAIL=example@sky.pro
 TEST_PASSWORD=example
+
+BOT_TOKEN=example
 ~~~
 
 В браузере в адресной строке, перейдите на
@@ -222,6 +224,7 @@ newgrp docker
 | POSTGRES_PASSWORD       | Пароль пользователя БД                                                         |
 | POSTGRES_HOST           | Хост БД (для работы на сервере должен быть = db)                               |
 | POSTGRES_PORT           | Порт БД (по стандарту должен быть = 5432)                                      |
+| BOT_TOKEN               | Токен вашего бота                                                              |
 
 Создайте репозиторий на Docker Hub
 Сгенерируйте Access Token:
