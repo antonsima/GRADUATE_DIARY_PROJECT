@@ -90,6 +90,7 @@
                                    placeholder="Введите ваш ID чата в Telegram для получения уведомлений">
                             {% if user.chat_id %}
                             <div class="form-text">Текущий ID чата: <strong>{{ user.chat_id }}</strong></div>
+                            <div class="form-text"><strong>Уведомления приходят каждый день в 8:00 (МСК)</strong></div>
                             {% else %}
                             <div class="form-text">ID чата не указан. Уведомления не будут приходить.</div>
                             {% endif %}
