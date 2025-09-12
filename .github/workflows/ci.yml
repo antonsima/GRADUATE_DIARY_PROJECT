@@ -134,6 +134,7 @@ jobs:
           POSTGRES_PORT=5432
           TEST_EMAIL=${{ secrets.TEST_EMAIL }}
           TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
+          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
           ENV_EOF
       
             echo "✅ .env file created"
