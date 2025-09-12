@@ -218,9 +218,9 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BEAT_SCHEDULE = {
-    "send-daily-habits-reminder": {
-        "task": "habits.tasks.send_daily_entry_reminders",
-        "schedule": crontab(hour=16, minute=55),  # Каждый день в 8:00 утра
+    "send-daily-diary-reminder": {
+        "task": "diary.tasks.send_daily_entry_reminders",
+        "schedule": crontab(hour=17, minute=20),  # Каждый день в 8:00 утра
     },
 }
 
