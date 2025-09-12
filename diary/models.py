@@ -106,7 +106,6 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         self.content_html = markdownify(self.content)
-        self.content_html = markdownify(self.content)
         self.word_count = len(self.content.split())
         super().save(*args, **kwargs)
 
