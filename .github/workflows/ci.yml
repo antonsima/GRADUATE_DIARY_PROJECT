@@ -119,6 +119,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           BRANCH=${GITHUB_REF#refs/heads/}
             cd ~/GRADUATE_DIARY_PROJECT
+            sudo docker compose down -v --remove-orphans
+            sudo docker system prune -f
             git pull
       
             # Создаем .env файл
