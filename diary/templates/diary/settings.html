@@ -85,31 +85,13 @@
 
                         <button type="submit" class="btn btn-primary w-100">Сохранить изменения</button>
                     </form>
-
-                    <!-- Сообщения об ошибках и успехе -->
-                    {% if messages %}
-                    <div class="mt-3">
-                        {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            {{ message }}
+                        <div class="mb-3">
+                            <label for="chat_id" class="form-label">ID чата в Telegram</label>
+                            <input type="number" class="form-control" id="chat_id" name="chat_id"
+                                   value="{{ user.chat_id }}"
+                                   placeholder="Введите ваш ID чата в Telegram для получения уведомлений">
                         </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="mb-3">
-    <label for="chat_id" class="form-label">ID чата в Telegram</label>
-    <input type="number" class="form-control" id="chat_id" name="chat_id"
-           value="{{ user.chat_id }}">
-    <div class="form-text">Введите ваш ID чата в Telegram для получения уведомлений</div>
-</div>
-
-<div class="mb-3">
+                    <div class="mb-3">
     <label class="form-label">Теги для уведомлений</label>
     <div class="row">
         {% for tag in all_tags %}
@@ -126,5 +108,21 @@
         {% endfor %}
     </div>
     <div class="form-text">Выберите теги, для которых хотите получать уведомления</div>
+</div>
+                                        <!-- Сообщения об ошибках и успехе -->
+                    {% if messages %}
+                    <div class="mt-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
