@@ -99,7 +99,8 @@ class ProfilePageView(View):
 
 class SettingsPageView(View):
     def get(self, request):
-        return render(request, "diary/settings.html")
+        all_tags = Tag.objects.all()
+        return render(request, "diary/settings.html", {"all_tags": all_tags})
 
     def post(self, request):
         user = request.user
@@ -108,6 +109,22 @@ class SettingsPageView(View):
 
         user.first_name = request.POST.get("first_name", user.first_name)
         user.last_name = request.POST.get("last_name", user.last_name)
+
+        # Обработка chat_id для Telegram
+        chat_id = request.POST.get("chat_id")
+        if chat_id:
+            try:
+                user.chat_id = int(chat_id)
+            except (ValueError, TypeError):
+                messages.error(request, _("ID чата должен быть числом"))
+
+        # Обработка выбранных тегов для уведомлений
+        notification_tag_ids = request.POST.getlist("notification_tags")
+        try:
+            notification_tags = Tag.objects.filter(id__in=notification_tag_ids)
+            user.notification_tags.set(notification_tags)
+        except Exception as e:
+            messages.error(request, _(f"Ошибка при сохранении тегов уведомлений: {e}"))
 
         if "avatar" in request.FILES:
             avatar = request.FILES["avatar"]

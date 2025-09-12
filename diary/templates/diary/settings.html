@@ -102,4 +102,29 @@
         </div>
     </div>
 </div>
+<div class="mb-3">
+    <label for="chat_id" class="form-label">ID чата в Telegram</label>
+    <input type="number" class="form-control" id="chat_id" name="chat_id"
+           value="{{ user.chat_id }}">
+    <div class="form-text">Введите ваш ID чата в Telegram для получения уведомлений</div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Теги для уведомлений</label>
+    <div class="row">
+        {% for tag in all_tags %}
+        <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="notification_tags"
+                       value="{{ tag.id }}" id="tag{{ tag.id }}"
+                       {% if tag in user.notification_tags.all %}checked{% endif %}>
+                <label class="form-check-label" for="tag{{ tag.id }}">
+                    {{ tag.name }}
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="form-text">Выберите теги, для которых хотите получать уведомления</div>
+</div>
 {% endblock %}
