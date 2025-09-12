@@ -9,6 +9,13 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    chat_id = models.BigIntegerField(verbose_name="ID чата в Telegram", blank=True, null=True)
+    notification_tags = models.ManyToManyField(
+        'diary.Tag',
+        blank=True,
+        verbose_name="Теги для уведомлений",
+        help_text="Выберите теги, для получения уведомлений о записях"
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

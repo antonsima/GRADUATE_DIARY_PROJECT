@@ -17,6 +17,10 @@ django-markdownx = "^4.0.9"
 django-cors-headers = "^4.7.0"
 django-colorfield = "^0.14.0"
 django-widget-tweaks = "^1.5.0"
+redis = "^6.4.0"
+drf-yasg = "^1.21.10"
+django-celery-beat = "^2.8.1"
+celery = "^5.5.3"
 
 [tool.poetry.group.lint.dependencies]
 black = "^25.1.0"
