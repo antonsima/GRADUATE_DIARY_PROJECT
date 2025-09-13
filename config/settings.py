@@ -221,10 +221,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "diary.tasks.send_daily_entry_reminders",
         "schedule": crontab(hour=5, minute=0),  # Каждый день в 8:00 утра
     },
-    "send-daily-diary-reminder-every-minute": {
-        "task": "diary.tasks.send_daily_entry_reminders",
-        "schedule": crontab(minute='*/1'),  # Каждый день в 8:00 утра
-    },
+    # "send-daily-diary-reminder-every-minute": {
+    #     "task": "diary.tasks.send_daily_entry_reminders",
+    #     "schedule": crontab(minute='*/1'),  # Каждый день в 8:00 утра
+    # },
 }
 
 TELEGRAM_URL = "https://api.telegram.org/bot"
