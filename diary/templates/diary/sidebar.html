@@ -106,7 +106,7 @@
                         <img src="{{ user.avatar.url }}" alt="Аватар" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                     {% else %}
                         <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                            <span class="text-white">{{ user.first_name|first|default:user.email|upper }}</span>
+                            <span class="text-white">{{ user.first_name|first|default:user.email|first|upper }}</span>
                         </div>
                     {% endif %}
                     <div>
