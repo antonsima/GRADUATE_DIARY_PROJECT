@@ -218,9 +218,14 @@ class EntryListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tags"] = Tag.objects.filter(
+        tags = Tag.objects.filter(
             Q(owner=self.request.user) | Q(owner__isnull=True)
+        ).annotate(
+            entry_count=Count('entry', filter=Q(entry__owner=self.request.user))
         )
+        tag_counts = {tag.id: tag.entry_count for tag in tags}
+        context["tags"] = tags
+        context["tag_counts"] = tag_counts
         context["mood_levels"] = Entry.MOOD_LEVEL
 
         return context
@@ -233,6 +238,22 @@ class EntryDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return Entry.objects.filter(owner=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Аннотируем теги количеством записей текущего пользователя
+        tags = Tag.objects.filter(
+            Q(owner=self.request.user) | Q(owner__isnull=True)
+        ).annotate(
+            entry_count=Count('entry', filter=Q(entry__owner=self.request.user))
+        )
+
+        # Создаем словарь для быстрого доступа к количеству записей по ID тега
+        tag_counts = {tag.id: tag.entry_count for tag in tags}
+        context['tag_counts'] = tag_counts
+
+        return context
 
 
 class EntryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):

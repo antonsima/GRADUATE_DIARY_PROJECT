@@ -116,6 +116,7 @@
 </style>
 {% endblock %}
 {% block content %}
+{% load diary_extras %}
 {% if messages %}
 <div class="messages">
     {% for message in messages %}
@@ -153,7 +154,7 @@
             <div class="mb-3">
                 {% for tag in entry.tags.all %}
                                 <a href="{% url 'diary:entry_list' %}?tag={{ tag.slug }}" class="badge tag-badge" style="background-color: {{ tag.color }}; color: white;">
-                                    {{ tag.name }}
+                                    {{ tag.name }} ({{ tag_counts|get_item:tag.id }})
                                 </a>
                 {% endfor %}
             </div>
