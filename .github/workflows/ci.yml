@@ -133,6 +133,8 @@ jobs:
           TEST_EMAIL=${{ secrets.TEST_EMAIL }}
           TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
           BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+          CELERY_BROKER_URL=redis://redis:6379
+          CELERY_RESULT_BACKEND=redis://redis:6379
           ENV_EOF
       
             echo "✅ .env file created"
