@@ -75,7 +75,3 @@ def is_active_in(context, *url_names):
         print("pass")
 
     return ""
-
-@register.filter
-def get_item(dictionary, key):
-    return dictionary.get(key)
