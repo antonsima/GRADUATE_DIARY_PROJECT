@@ -1,4 +1,5 @@
 <!doctype html>
+{% load static %}
 <html lang="en" data-bs-theme="auto">
 <head>
     <meta charset="utf-8"/>
@@ -10,10 +11,6 @@
     <title>Footers · Bootstrap v5.3</title>
     <link rel="canonical"
           href="https://getbootstrap.com/docs/5.3/examples/footers/"/>
-
-    <!-- Подключаем ваш CSS файл Bootstrap -->
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet"/>
-
     <meta name="theme-color" content="#712cf9"/>
     <style>
         body {
@@ -150,7 +147,7 @@
                 <a href="/"
                    class="me-2 text-decoration-none"
                    aria-label="Bootstrap">
-                    <img src="/static/images/baxcha.png" alt="Logo" width="50" height="50"
+                    <img src="{% static 'images/baxcha.png' %}" alt="Logo" width="50" height="50"
                          class="d-inline-block align-text-top">
                 </a>
                 <span class="text-body-secondary">&copy; 2025 Baxcha, Inc</span>
@@ -158,22 +155,22 @@
             <ul class="nav col-md-4 justify-content-end list-unstyled d-flex ms-auto">
                 <li class="ms-3">
                     <a class="text-body-secondary" href="https://vk.com/baxcha241" aria-label="VK">
-                        <img src="/static/images/vk.png" alt="VK"
+                        <img src="{% static 'images/vk.png' %}" alt="VK"
                              class="social-icon"></a>
                 </li>
                 <li class="ms-3">
                     <a class="text-body-secondary" href="https://t.me/baxcha241" aria-label="TG">
-                        <img src="/static/images/tg.png" alt="Telegram"
+                        <img src="{% static 'images/tg.png' %}" alt="Telegram"
                              class="social-icon"></a>
                 </li>
                 <li class="ms-3">
                     <a class="text-body-secondary" href="https://youtube.com/@baxcha241" aria-label="YT">
-                        <img src="/static/images/yt.png" alt="YouTube"
+                        <img src="{% static 'images/yt.png' %}" alt="YouTube"
                              class="social-icon"></a>
                 </li>
                 <li class="ms-3">
                     <a class="text-body-secondary" href="https://instagram.com/anton_simak" aria-label="INST">
-                        <img src="/static/images/inst.png" alt="Instagram"
+                        <img src="{% static 'images/inst.png' %}" alt="Instagram"
                              class="social-icon"></a>
                 </li>
             </ul>
@@ -182,6 +179,6 @@
 </div>
 
 <!-- Подключаем ваш JS файл Bootstrap -->
-<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>

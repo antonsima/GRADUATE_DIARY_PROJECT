@@ -150,6 +150,7 @@
 </style>
 {% endblock %}
 {% block content %}
+{% load diary_extras %}
 <div class="container">
     {% if messages %}
     <div class="messages">
@@ -205,7 +206,7 @@
                                         {% for tag in entry.tags.all|slice:":3" %}
                                             <div class="tag-wrapper">
                                                 <span class="badge tag-badge" style="background-color: {{ tag.color }}; color: white;">
-                                                    {{ tag.name }}
+                                                    {{ tag.name }} ({{ tag_counts|get_item:tag.id }})
                                                 </span>
                                             </div>
                                         {% endfor %}

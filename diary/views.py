@@ -31,6 +31,15 @@ class DiaryHomeView(TemplateView):
 
             recent_entries = entries.order_by("-entry_date")[:6]
 
+            tags = Tag.objects.filter(
+                Q(owner=self.request.user) | Q(owner__isnull=True)
+            ).annotate(
+                entry_count=Count('entry', filter=Q(entry__owner=self.request.user))
+            )
+
+            tag_counts = {tag.id: tag.entry_count for tag in tags}
+            context['tag_counts'] = tag_counts
+
             mood_stats_data = (
                 entries.values("mood").annotate(count=Count("id")).order_by("mood")
             )
@@ -75,6 +84,7 @@ class DiaryHomeView(TemplateView):
                 {
                     "recent_entries": recent_entries,
                     "mood_stats": mood_stats,
+                    "tag_counts": tag_counts,
                 }
             )
         else:
@@ -86,6 +96,7 @@ class DiaryHomeView(TemplateView):
                     "recent_entries": [],
                     "mood_stats": [],
                     "popular_tags": [],
+                    "tag_counts": {}
                 }
             )
 
